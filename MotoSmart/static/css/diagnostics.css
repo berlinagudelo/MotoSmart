@@ -1,0 +1,107 @@
+.diagnostic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 14px;
+}
+
+.diagnostic-card {
+  display: flex;
+  min-width: 0;
+  min-height: 255px;
+  flex-direction: column;
+  gap: 15px;
+  padding: 20px;
+  border: 1px solid #36363b;
+  border-top: 3px solid #df302f;
+  border-radius: 4px;
+  background: #171719;
+}
+
+.diagnostic-card-head,
+.diagnostic-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.diagnostic-card h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.diagnostic-code-block {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px 13px;
+  border-left: 3px solid #df302f;
+  background: #21191b;
+}
+
+.diagnostic-code-list {
+  display: grid;
+  gap: 10px;
+}
+
+.diagnostic-code-block span,
+.diagnostic-card-foot span {
+  color: #99999c;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.diagnostic-code-block strong {
+  overflow-wrap: anywhere;
+  color: #ff706c;
+  font-family: var(--display);
+  font-size: 26px;
+  line-height: 1;
+}
+
+.diagnostic-code-block p {
+  margin: 4px 0 0;
+  color: #d0d0d3;
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.diagnostic-copy {
+  min-width: 0;
+}
+
+.diagnostic-description {
+  margin: 0;
+  color: #b8b8bb;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.diagnostic-card-foot {
+  align-self: end;
+  width: 100%;
+  padding-top: 14px;
+  border-top: 1px solid #303035;
+  color: #96969a;
+  font-size: 11px;
+}
+
+.diagnostic-card-foot div {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.diagnostic-card-foot strong {
+  overflow-wrap: anywhere;
+  color: #ededed;
+  font-size: 12px;
+}
+
+.diagnostic-card-foot .delete {
+  margin-left: auto;
+}
