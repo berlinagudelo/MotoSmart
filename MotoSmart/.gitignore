@@ -1,0 +1,4 @@
+# Credenciales y configuración local
+.env
+.env.*
+correo.configuracion.ps1

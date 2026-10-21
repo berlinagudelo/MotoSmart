@@ -7,6 +7,7 @@ class Moto(db.Model):
     placa = db.Column(db.String(20), nullable=False, unique=True)
     marca = db.Column(db.String(50), nullable=False)
     modelo = db.Column(db.String(50), nullable=False)
+    tipo_tecnologia = db.Column(db.String(20), nullable=False, default='electronica')
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
 
     # Relación con Cliente

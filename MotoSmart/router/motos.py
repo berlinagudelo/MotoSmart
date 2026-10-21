@@ -9,6 +9,37 @@ from modelo.usuario import Usuario
 from roles import rol_required
 
 motos_bp = Blueprint('motos', __name__)
+TIPOS_TECNOLOGIA = ('electronica', 'no_electronica')
+
+
+def serializar_moto(moto, incluir_cliente=False):
+    ordenes = sorted(
+        moto.ordenes_servicio,
+        key=lambda orden: orden.actualizada_en or orden.creada_en,
+        reverse=True
+    )
+    ultima_orden = ordenes[0] if ordenes else None
+    resultado = {
+        'id': moto.id,
+        'placa': moto.placa,
+        'marca': moto.marca,
+        'modelo': moto.modelo,
+        'tipo_tecnologia': moto.tipo_tecnologia or 'electronica',
+        'trabajo_actual': {
+            'numero': ultima_orden.numero,
+            'estado': ultima_orden.estado,
+            'descripcion': ultima_orden.descripcion,
+            'actualizada_en': ultima_orden.actualizada_en.isoformat()
+        } if ultima_orden else None
+    }
+    if incluir_cliente:
+        resultado['cliente'] = {
+            'id': moto.cliente.id,
+            'nombre': moto.cliente.nombre,
+            'email': moto.cliente.email,
+            'telefono': moto.cliente.telefono
+        } if moto.cliente else None
+    return resultado
 
 
 @motos_bp.route('/motos', methods=['POST'])
@@ -45,10 +76,15 @@ def crear_moto():
             db.session.add(cliente)
             db.session.flush()
 
+    tipo_tecnologia = data.get('tipo_tecnologia', 'electronica').strip().lower()
+    if tipo_tecnologia not in TIPOS_TECNOLOGIA:
+        return jsonify({'error': 'Selecciona un tipo de moto valido'}), 400
+
     nueva_moto = Moto(
         placa=placa,
         marca=data['marca'],
         modelo=data['modelo'],
+        tipo_tecnologia=tipo_tecnologia,
         cliente_id=cliente.id
     )
     db.session.add(nueva_moto)
@@ -73,10 +109,7 @@ def listar_motos():
         cliente = Cliente.query.filter_by(email=usuario.username).first()
         motos = Moto.query.filter_by(cliente_id=cliente.id).all() if cliente else []
 
-    return jsonify([
-        {'id': m.id, 'placa': m.placa, 'marca': m.marca, 'modelo': m.modelo}
-        for m in motos
-    ])
+    return jsonify([serializar_moto(m) for m in motos])
 
 
 @motos_bp.route('/motos/detalle', methods=['GET'])
@@ -86,21 +119,7 @@ def listar_motos_detalle():
         return jsonify({'error': 'No tienes permisos para esta accion'}), 403
 
     motos = Moto.query.all()
-    return jsonify([
-        {
-            'id': m.id,
-            'placa': m.placa,
-            'marca': m.marca,
-            'modelo': m.modelo,
-            'cliente': {
-                'id': m.cliente.id,
-                'nombre': m.cliente.nombre,
-                'email': m.cliente.email,
-                'telefono': m.cliente.telefono
-            } if m.cliente else None
-        }
-        for m in motos
-    ])
+    return jsonify([serializar_moto(m, incluir_cliente=True) for m in motos])
 
 
 @motos_bp.route('/motos/<int:id>', methods=['DELETE'])

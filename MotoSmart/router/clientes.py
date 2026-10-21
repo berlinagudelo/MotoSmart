@@ -59,7 +59,11 @@ def actualizar_cliente(id):
 
 
 @clientes_bp.route('/clientes/detalle', methods=['GET'])
+@jwt_required()
 def listar_clientes_detalle():
+    if get_jwt().get('rol') not in ('admin', 'mecanico'):
+        return jsonify({"error": "No tienes permisos para consultar los clientes"}), 403
+
     clientes = Cliente.query.all()
     resultado = []
     for cl in clientes:

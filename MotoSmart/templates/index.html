@@ -1,38 +1,29 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MotoSmart | Diagnóstico inteligente</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../static/css/styles.css">
-  <link rel="stylesheet" href="../static/css/scanner.css">
-  <link rel="stylesheet" href="../static/css/diagnostics.css">
-  <link rel="stylesheet" href="../static/css/polish.css">
-</head>
+{% include 'partials/head.html' %}
 <body>
-<div id="toast-region" class="toast-region" aria-live="polite"></div>
-<main id="auth-view" class="auth-layout">
-  <section class="auth-intro"><div class="brand"><b>M</b> Moto<span>Smart</span></div><div class="intro-copy"><p class="eyebrow">Diagnóstico conectado</p><h1>Tu moto habla.<br><em>Nosotros la entendemos.</em></h1><p>Centraliza el estado de tus motos, interpreta lecturas del escáner y conserva cada diagnóstico en un mismo lugar.</p></div><div class="metrics"><div><strong>OCR</strong><small>Lectura de códigos</small></div><div><strong>24/7</strong><small>Historial disponible</small></div></div></section>
-  <section class="auth-panel"><div class="auth-card"><div class="auth-tabs"><button class="tab active" data-tab="login">Iniciar sesión</button><button class="tab" data-tab="register">Crear cuenta</button></div>
-    <form id="login-form" class="auth-form"><div class="form-heading"><h2>Bienvenido de vuelta</h2><p>Ingresa para consultar tu información.</p></div><label>Correo electrónico<input name="email" type="email" placeholder="nombre@correo.com" required></label><label>Contraseña<input name="password" type="password" placeholder="Tu contraseña" minlength="6" required></label><button class="btn primary wide">Entrar a MotoSmart <i>→</i></button></form>
-    <form id="register-form" class="auth-form hidden"><div class="form-heading"><h2>Crea tu cuenta</h2><p>Empieza a cuidar tus motos con más información.</p></div><label>Nombre completo<input name="name" placeholder="Tu nombre" required></label><label>Correo electrónico<input name="email" type="email" placeholder="nombre@correo.com" required></label><label>Contraseña<input name="password" type="password" placeholder="Mínimo 6 caracteres" minlength="6" required></label><label>Tipo de cuenta<select name="role"><option value="cliente">Cliente</option><option value="mecanico">Mecánico</option></select></label><small class="note">El cliente consulta sus resultados. El mecánico registra motos y procesa diagnósticos.</small><button class="btn primary wide">Crear mi cuenta <i>→</i></button></form>
-  </div></section>
-</main>
+{% include 'partials/overlays.html' %}
+{% include 'partials/auth.html' %}
 <div id="app-view" class="app hidden">
- <aside class="sidebar"><a class="brand" href="#"><b>M</b> Moto<span>Smart</span></a><nav><button class="nav active" data-view="inicio">⌂ <span>Resumen</span></button><button class="nav customer-only hidden" data-view="resultados">▤ <span>Resultados del servicio</span></button><button class="nav customer-only hidden" data-view="citas">□ <span>Mis citas</span></button><button class="nav" data-view="motos">◈ <span data-client>Mis motos</span><span data-admin class="hidden">Motos</span></button><button class="nav client" data-view="citas">□ <span>Citas</span></button><button class="nav client" data-view="scanner">⌁ <span>Escáner OCR</span></button><button class="nav client" data-view="prioridades">! <span>Prioridades</span></button><button class="nav" data-view="diagnosticos">▤ <span>Diagnósticos</span></button></nav><button id="logout" class="logout">↪ Cerrar sesión</button></aside>
- <section class="workspace"><header><button id="menu" class="menu" aria-label="Menú">☰</button><div><p class="eyebrow" id="overline">Panel</p><h1 id="title">Resumen</h1></div><div class="user"><b id="initial">U</b><div><strong id="user-name">Usuario</strong><small id="user-role">Cliente</small></div></div></header>
- <div class="content">
-  <section id="view-inicio" class="view active"><div class="section-head welcome"><div><p class="eyebrow">Estado general</p><h2>Todo listo para rodar.</h2><p id="welcome">Consulta el estado de tus motos y sus lecturas recientes.</p></div><button class="btn primary client" data-go="scanner">Analizar escáner →</button></div><div class="stats"><article><span>◈</span><p data-client>Mis motos</p><p data-admin class="hidden">Motos registradas</p><strong id="moto-count">—</strong></article><article><span>⌁</span><p>Diagnósticos</p><strong id="diag-count">—</strong></article><article class="status"><span>●</span><p>Estado del sistema</p><strong>Activo</strong></article></div><section class="panel recent"><div class="panel-title"><div><h3>Diagnósticos recientes</h3><p>Las últimas lecturas procesadas.</p></div><button class="text-btn" data-go="diagnosticos">Ver historial →</button></div><div id="recent"><p class="empty">Cargando información...</p></div></section></section>
-  <section id="view-motos" class="view"><div class="section-head"><div><p class="eyebrow">Inventario</p><h2 data-client>Mis motos</h2><h2 data-admin class="hidden">Todas las motos</h2></div><button id="add-moto" class="btn primary">+ Registrar moto</button></div><section class="panel"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Marca</th><th>Modelo</th><th class="admin-col hidden">Placa</th><th class="admin-col hidden">Acciones</th></tr></thead><tbody id="motos-body"></tbody></table></div><p id="motos-empty" class="empty hidden">No hay motos para mostrar.</p></section></section>
-  <section id="view-citas" class="view"><div class="section-head"><div><p class="eyebrow">Agenda de taller</p><h2>Citas</h2><p id="citas-subtitle">Programa el servicio para una de tus motos.</p></div><button id="add-cita" class="btn primary customer-only hidden">+ Agendar cita</button></div><section class="panel"><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Moto</th><th>Cliente</th><th>Servicio</th><th class="mecanico-action hidden">Acciones</th></tr></thead><tbody id="citas-body"></tbody></table></div><p id="citas-empty" class="empty hidden">No hay citas agendadas.</p></section></section>
-  <section id="view-scanner" class="view client"><div class="section-head"><div><p class="eyebrow">Lectura inteligente</p><h2>Escáner OCR</h2><p>Sube una foto clara del código o pantalla del escáner.</p></div></div><div class="scanner"><section class="panel upload"><form id="scanner-form"><label>Selecciona una moto<select id="scan-moto" name="moto_id" required><option value="">Elige una moto</option></select></label><label class="drop" for="image"><input id="image" name="imagen" type="file" accept="image/png,image/jpeg,image/webp" required><img id="image-preview" class="image-preview hidden" alt="Vista previa de la imagen seleccionada"><b id="upload-icon">↑</b><strong id="upload-text">Arrastra una imagen o haz clic para elegirla</strong><small>PNG, JPG o WEBP, máximo 10 MB</small><small id="file-name"></small></label><button id="scan-submit" class="btn primary wide">Procesar diagnóstico →</button></form></section><aside><p class="eyebrow">Recomendación</p><h3>Una lectura precisa empieza con una buena foto.</h3><p>Evita reflejos y encuadra por completo el código del escáner.</p></aside></div><section id="ocr-result" class="result hidden"><b>✓</b><div><p class="eyebrow">Diagnóstico guardado</p><strong id="ocr-text"></strong><p id="ocr-description"></p></div></section></section>
-  <section id="view-resultados" class="view"><div class="section-head"><div><p class="eyebrow">Mi servicio</p><h2>Resultados del servicio</h2><p>Consulta el resultado y las especificaciones de cada revisión realizada.</p></div></div><section class="panel recent"><div id="resultados-list"><p class="empty">Cargando resultados...</p></div></section></section>
-  <section id="view-prioridades" class="view client"><div class="section-head"><div><p class="eyebrow">Cola inteligente</p><h2>Prioridades de atención</h2><p>Las motos se ordenan por la urgencia de su último diagnóstico.</p></div></div><div id="prioridades-body" class="priority-grid"></div><p id="prioridades-empty" class="empty panel hidden">Aún no hay diagnósticos para priorizar.</p></section>
-  <section id="view-diagnosticos" class="view"><div class="section-head"><div><p class="eyebrow">Historial</p><h2>Diagnósticos</h2><p data-client>Todas las lecturas de tus motos.</p><p data-admin class="hidden">Lecturas procesadas en toda la plataforma.</p></div></div><div id="diagnosticos-body" class="diagnostic-grid"></div><p id="diags-empty" class="empty panel hidden">Aún no hay diagnósticos disponibles.</p></section>
+{% include 'partials/sidebar.html' %}
+{% include 'partials/app-header.html' %}
+  <div class="content">
+{% include 'partials/views/ordenes.html' %}
+{% include 'partials/views/cuenta.html' %}
+{% include 'partials/views/inicio.html' %}
+{% include 'partials/views/motos.html' %}
+{% include 'partials/views/citas.html' %}
+{% include 'partials/views/scanner.html' %}
+{% include 'partials/views/revision-mecanica.html' %}
+{% include 'partials/views/resultados.html' %}
+{% include 'partials/views/prioridades.html' %}
+{% include 'partials/views/diagnosticos.html' %}
+{% include 'partials/views/inventario.html' %}
+{% include 'partials/views/mecanicos.html' %}
+{% include 'partials/views/facturas.html' %}
+{% include 'partials/views/facturacion.html' %}
  </div></section>
 </div>
-<dialog id="moto-modal"><form id="moto-form"><div class="modal-title"><div><p class="eyebrow">Nueva moto</p><h2>Registra una moto</h2></div><button class="close" type="button">×</button></div><div class="form-grid"><label>Placa<input name="placa" placeholder="ABC123" maxlength="20" required></label><label>Marca<input name="marca" placeholder="Ej. Yamaha" maxlength="50" required></label><label class="full">Modelo<input name="modelo" placeholder="Ej. FZ 2.0" maxlength="50" required></label><label class="mechanic-field">Nombre del cliente<input name="cliente_nombre" placeholder="Nombre del propietario" maxlength="100" required></label><label class="mechanic-field">Correo del cliente<input name="cliente_email" type="email" placeholder="cliente@correo.com" required></label></div><div class="actions"><button class="btn ghost close" type="button">Cancelar</button><button class="btn primary">Registrar moto</button></div></form></dialog>
-<dialog id="cita-modal"><form id="cita-form"><div class="modal-title"><div><p class="eyebrow" id="cita-modal-label">Nueva cita</p><h2 id="cita-modal-title">Agendar servicio</h2></div><button class="close-cita" type="button">×</button></div><input id="cita-id" type="hidden"><div class="form-grid"><label class="full">Moto<select id="cita-moto" name="moto_id" required><option value="">Elige una moto</option></select></label><label>Fecha<input id="cita-fecha" name="fecha" type="date" required></label><label>Servicio<input id="cita-descripcion" name="descripcion" placeholder="Ej. Diagnóstico general" required></label></div><div class="actions"><button class="btn ghost close-cita" type="button">Cancelar</button><button id="save-cita" class="btn primary">Agendar cita</button></div></form></dialog>
-<script src="../static/js/app.js"></script>
+{% include 'partials/modals.html' %}
+<script src="../static/js/app.js?v=work-status-1"></script>
 </body></html>

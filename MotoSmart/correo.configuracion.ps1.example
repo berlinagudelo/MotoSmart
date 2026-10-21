@@ -1,0 +1,16 @@
+# Copia este archivo como correo.configuracion.ps1, completa los valores en tu
+# equipo y ejecútalo en la misma ventana de PowerShell antes de iniciar MotoSmart.
+# No compartas ni subas el archivo final al repositorio.
+
+# Genera una clave JWT aleatoria una sola vez y guarda el resultado en tu
+# archivo local correo.configuracion.ps1. No la cambies entre ejecuciones.
+# $env:MOTOSMART_JWT_SECRET_KEY = 'PEGA_AQUI_TU_CLAVE_ALEATORIA'
+$env:MOTOSMART_DATABASE_URL = ''
+$env:MOTOSMART_PUBLIC_URL = 'http://127.0.0.1:5000'
+
+$env:SMTP_HOST = 'smtp.gmail.com'
+$env:SMTP_PORT = '587'
+$env:SMTP_TLS = 'true'
+$env:SMTP_USER = 'tu_correo@gmail.com'
+$env:SMTP_PASSWORD = 'PEGA_AQUI_TU_NUEVA_CLAVE_DE_APLICACION'
+$env:SMTP_FROM = 'MotoSmart <tu_correo@gmail.com>'

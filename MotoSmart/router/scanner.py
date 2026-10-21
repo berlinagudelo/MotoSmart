@@ -75,6 +75,8 @@ def upload_scanner():
     moto = Moto.query.get(request.form.get('moto_id'))
     if not moto:
         return jsonify({'error': 'La moto seleccionada no existe'}), 404
+    if moto.tipo_tecnologia != 'electronica':
+        return jsonify({'error': 'El escaner solo se usa para motos electronicas. Registra la revision mecanica manual.'}), 400
 
     file = request.files['imagen']
     filename = f"{uuid.uuid4()}{os.path.splitext(file.filename)[1]}"
@@ -120,19 +122,23 @@ def serializar_diagnostico(diagnostico):
     if not detalles:
         detalles = [{'codigo': diagnostico.codigo_error, 'descripcion': diagnostico.descripcion or 'Sin descripcion disponible.'}]
     analisis = evaluar_prioridad(detalles)
+    prioridad = diagnostico.prioridad or analisis['prioridad']
+    pesos_manual = {'BAJA': 1, 'MEDIA': 2, 'ALTA': 3}
+    peso_prioridad = pesos_manual.get(prioridad, analisis['peso_prioridad']) if diagnostico.codigo_error == 'REVISION MECANICA' else analisis['peso_prioridad']
     return {
         'id': diagnostico.id,
         'moto_id': diagnostico.moto_id,
         'moto': {
             'marca': diagnostico.moto.marca,
             'modelo': diagnostico.moto.modelo,
-            'placa': diagnostico.moto.placa
+            'placa': diagnostico.moto.placa,
+            'tipo_tecnologia': diagnostico.moto.tipo_tecnologia or 'electronica'
         } if diagnostico.moto else None,
         'codigo_error': diagnostico.codigo_error,
         'descripcion': diagnostico.descripcion or 'Sin descripcion disponible.',
         'detalles': detalles,
-        'prioridad': diagnostico.prioridad or analisis['prioridad'],
-        'peso_prioridad': analisis['peso_prioridad'],
+        'prioridad': prioridad,
+        'peso_prioridad': peso_prioridad,
         'motivo_prioridad': diagnostico.motivo_prioridad or analisis['motivo_prioridad'],
         'recomendacion': diagnostico.recomendacion or analisis['recomendacion'],
         'fecha': diagnostico.fecha.isoformat()
