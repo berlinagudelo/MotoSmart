@@ -1,1 +1,28 @@
-  <section id="view-revision-mecanica" class="view client"><div class="section-head"><div><p class="eyebrow">Diagnóstico manual</p><h2>Revisión mecánica</h2><p>Registra los hallazgos de motos no electrónicas para emitir su diagnóstico.</p></div></div><section class="panel mechanic-review"><form id="revision-mecanica-form"><div class="form-grid"><label class="full">Moto no electrónica<select id="revision-moto" name="moto_id" required><option value="">Elige una moto</option></select></label><label class="full">Problemas encontrados<textarea name="hallazgos" maxlength="1200" placeholder="Ej. Desgaste de pastillas, fuga de aceite, cadena floja..." required></textarea></label><label class="full">Diagnóstico<textarea name="diagnostico" maxlength="1200" placeholder="Conclusión de la revisión mecánica" required></textarea></label><label>Prioridad<select name="prioridad"><option value="BAJA">Baja</option><option value="MEDIA" selected>Media</option><option value="ALTA">Alta</option></select></label><label>Recomendación<textarea name="recomendacion" maxlength="800" placeholder="Trabajo recomendado"></textarea></label></div><div class="actions"><button class="btn primary">Guardar revisión</button></div></form></section></section>
+  <section id="view-revision-mecanica" class="view client">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Diagnóstico manual</p>
+        <h2>Revisión mecánica</h2>
+        <p>Registra los hallazgos de motos no electrónicas para emitir su diagnóstico.</p>
+      </div>
+    </div>
+    <section class="panel mechanic-review">
+      <form id="revision-mecanica-form">
+        <div class="form-grid"><label class="full">Moto no electrónica<select id="revision-moto"
+              name="moto_id" required>
+              <option value="">Elige una moto</option>
+            </select></label><label class="full">Problemas encontrados<textarea name="hallazgos"
+              maxlength="1200"
+              placeholder="Ej. Desgaste de pastillas, fuga de aceite, cadena floja..."
+              required></textarea></label><label class="full">Diagnóstico<textarea
+              name="diagnostico" maxlength="1200" placeholder="Conclusión de la revisión mecánica"
+              required></textarea></label><label>Prioridad<select name="prioridad">
+              <option value="BAJA">Baja</option>
+              <option value="MEDIA" selected>Media</option>
+              <option value="ALTA">Alta</option>
+            </select></label><label>Recomendación<textarea name="recomendacion" maxlength="800"
+              placeholder="Trabajo recomendado"></textarea></label></div>
+        <div class="actions"><button class="btn primary">Guardar revisión</button></div>
+      </form>
+    </section>
+  </section>

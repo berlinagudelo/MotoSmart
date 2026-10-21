@@ -1,1 +1,45 @@
-  <section id="view-scanner" class="view client"><div class="section-head"><div><p class="eyebrow">Lectura inteligente</p><h2>Escáner OCR</h2><p>Sube una foto clara del código o pantalla del escáner.</p></div></div><div class="scanner"><section class="panel upload"><form id="scanner-form"><label>Selecciona una moto<select id="scan-moto" name="moto_id" required><option value="">Elige una moto</option></select></label><label class="drop" for="image"><input id="image" name="imagen" type="file" accept="image/png,image/jpeg,image/webp" required><img id="image-preview" class="image-preview hidden" alt="Vista previa de la imagen seleccionada"><b id="upload-icon">↑</b><strong id="upload-text">Arrastra una imagen o haz clic para elegirla</strong><small>PNG, JPG o WEBP, máximo 10 MB</small><small id="file-name"></small></label><button id="scan-submit" class="btn primary wide">Procesar diagnóstico →</button></form></section><aside><p class="eyebrow">Recomendación</p><h3>Una lectura precisa empieza con una buena foto.</h3><p>Evita reflejos y encuadra por completo el código del escáner.</p></aside></div><section id="scanner-complete" class="scan-complete hidden"><div class="scan-complete-mark"><span></span><b>✓</b></div><div><p class="eyebrow">Lectura finalizada</p><h3>Diagnóstico<br><em>procesado.</em></h3><p>La imagen fue analizada y el resultado ya quedó guardado en el historial de la moto.</p></div><div class="scan-complete-actions"><button id="new-scan" class="btn ghost">Nueva lectura</button><button class="btn primary" data-go="diagnosticos">Ver diagnósticos →</button></div></section><section id="ocr-result" class="result hidden"><b>✓</b><div><p class="eyebrow">Diagnóstico guardado</p><strong id="ocr-text"></strong><p id="ocr-description"></p></div></section></section>
+  <section id="view-scanner" class="view client">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Lectura inteligente</p>
+        <h2>Escáner OCR</h2>
+        <p>Sube una foto clara del código o pantalla del escáner.</p>
+      </div>
+    </div>
+    <div class="scanner">
+      <section class="panel upload">
+        <form id="scanner-form"><label>Selecciona una moto<select id="scan-moto" name="moto_id"
+              required>
+              <option value="">Elige una moto</option>
+            </select></label><label class="drop" for="image"><input id="image" name="imagen"
+              type="file" accept="image/png,image/jpeg,image/webp" required><img id="image-preview"
+              class="image-preview hidden" alt="Vista previa de la imagen seleccionada"><b
+              id="upload-icon">↑</b><strong id="upload-text">Arrastra una imagen o haz clic para
+              elegirla</strong><small>PNG, JPG o WEBP, máximo 10 MB</small><small
+              id="file-name"></small></label><button id="scan-submit"
+            class="btn primary wide">Procesar diagnóstico →</button></form>
+      </section>
+      <aside>
+        <p class="eyebrow">Recomendación</p>
+        <h3>Una lectura precisa empieza con una buena foto.</h3>
+        <p>Evita reflejos y encuadra por completo el código del escáner.</p>
+      </aside>
+    </div>
+    <section id="scanner-complete" class="scan-complete hidden">
+      <div class="scan-complete-mark"><span></span><b>✓</b></div>
+      <div>
+        <p class="eyebrow">Lectura finalizada</p>
+        <h3>Diagnóstico<br><em>procesado.</em></h3>
+        <p>La imagen fue analizada y el resultado ya quedó guardado en el historial de la moto.</p>
+      </div>
+      <div class="scan-complete-actions"><button id="new-scan" class="btn ghost">Nueva
+          lectura</button><button class="btn primary" data-go="diagnosticos">Ver diagnósticos
+          →</button></div>
+    </section>
+    <section id="ocr-result" class="result hidden"><b>✓</b>
+      <div>
+        <p class="eyebrow">Diagnóstico guardado</p><strong id="ocr-text"></strong>
+        <p id="ocr-description"></p>
+      </div>
+    </section>
+  </section>

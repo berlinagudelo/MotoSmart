@@ -549,8 +549,28 @@ $('#register-form').addEventListener('submit', async event => {
   event.preventDefault();
   const form = new FormData(event.currentTarget);
   try {
-    const data = await api('/register', { method: 'POST', body: JSON.stringify({ username: form.get('email'), nombre: form.get('name') }) });
-    toast(data.mensaje || 'Revisa tu correo para verificar la cuenta.', 'success');
+    const data = await api('/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        username: form.get('email'),
+        password: form.get('password'),
+        nombre: form.get('name')
+      })
+    });
+    toast(data.mensaje || 'Cuenta creada. Ya puedes iniciar sesión.', 'success');
+    if (data.token) {
+      state.token = data.token;
+      state.role = decode(data.token).rol || 'cliente';
+      state.isWorkshopOwner = false;
+      state.username = form.get('email').split('@')[0];
+      localStorage.setItem('motosmart_token', state.token);
+      localStorage.setItem('motosmart_role', state.role);
+      localStorage.setItem('motosmart_username', state.username);
+      await boot();
+    } else {
+      document.querySelector('[data-tab="login"]').click();
+      $('#login-form [name="email"]').value = form.get('email');
+    }
     event.currentTarget.reset();
   } catch (error) { toast(error.message); }
 });

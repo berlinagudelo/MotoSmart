@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="es">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,6 +8,7 @@
   <title>Verificar correo | MotoSmart</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
+
 <body>
   <main class="auth-layout">
     <section class="auth-panel">
@@ -17,10 +19,12 @@
         </div>
         <form id="verify-registration-form" class="auth-form">
           <label>Contraseña
-            <input name="password" type="password" minlength="6" autocomplete="new-password" required>
+            <input name="password" type="password" minlength="6" autocomplete="new-password"
+              required>
           </label>
           <label>Confirma tu contraseña
-            <input name="password_confirm" type="password" minlength="6" autocomplete="new-password" required>
+            <input name="password_confirm" type="password" minlength="6" autocomplete="new-password"
+              required>
           </label>
           <button class="btn primary wide">Verificar y crear cuenta</button>
         </form>
@@ -31,4 +35,5 @@
   </main>
   <script src="{{ url_for('static', filename='js/verify-registration.js') }}" defer></script>
 </body>
+
 </html>

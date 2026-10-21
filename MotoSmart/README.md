@@ -70,7 +70,7 @@ La sección **Mis motos** incluye una ficha por vehículo que resume su último 
    ```
 
 5. Configura PostgreSQL y guarda su cadena de conexión solo en `MOTOSMART_DATABASE_URL` dentro de tu archivo local `correo.configuracion.ps1`. No escribas credenciales de base de datos en `db.py` ni las publiques. Usa el formato de conexión SQLAlchemy de PostgreSQL compatible con `psycopg2`; la aplicación no inicia si falta esta variable.
-6. Configura los secretos y el correo. MotoSmart no inicia si falta una clave JWT aleatoria de al menos 32 caracteres. Genera una clave una sola vez:
+6. Configura el correo y, opcionalmente, una clave JWT persistente. Si no defines `MOTOSMART_JWT_SECRET_KEY`, MotoSmart genera una clave temporal segura automáticamente para que puedas iniciar sin configurarla manualmente. Los tokens existentes dejarán de funcionar cuando se reinicie la aplicación. Para conservar las sesiones entre reinicios o desplegar en un servidor, genera una clave aleatoria de al menos 32 caracteres:
 
    ```powershell
    $bytes = New-Object byte[] 48
@@ -80,7 +80,7 @@ La sección **Mis motos** incluye una ficha por vehículo que resume su último 
    $rng.Dispose()
    ```
 
-   Guarda el resultado como `MOTOSMART_JWT_SECRET_KEY` en tu archivo local `correo.configuracion.ps1` (copia `correo.configuracion.ps1.example`). Conserva la misma clave entre ejecuciones; cambiarla invalida los tokens existentes. Configura también `MOTOSMART_DATABASE_URL` con la conexión privada a PostgreSQL y las variables SMTP descritas en **Notificaciones por correo**: SMTP es necesario para verificar nuevas cuentas. En un despliegue remoto, establece `MOTOSMART_PUBLIC_URL` con la URL pública HTTPS de la aplicación. Para usar los comandos desde PowerShell, carga la configuración en esa misma ventana con `. .\correo.configuracion.ps1`.
+   Si decides usarla, guarda el resultado como `MOTOSMART_JWT_SECRET_KEY` en tu archivo local `correo.configuracion.ps1` (copia `correo.configuracion.ps1.example`) y consérvala entre ejecuciones. Configura `MOTOSMART_DATABASE_URL` con la conexión privada a PostgreSQL y las variables SMTP descritas en **Notificaciones por correo**. SMTP es necesario solo cuando se reclama historial previo o se cambia el correo; una cuenta nueva se crea sin enviar correo. En un despliegue remoto, establece `MOTOSMART_PUBLIC_URL` con la URL pública HTTPS de la aplicación. Para usar los comandos desde PowerShell, carga la configuración en esa misma ventana con `. .\correo.configuracion.ps1`.
 
 7. Crea el titular del taller desde una consola local, nunca desde el registro público:
 
@@ -90,7 +90,7 @@ La sección **Mis motos** incluye una ficha por vehículo que resume su último 
 
    El comando solicita el correo y la contraseña, y solo permite crear el titular si todavía no existe uno. Los mecánicos adicionales se crean desde **Mi equipo**.
 
-8. Inicia la aplicación. En PowerShell, primero carga la configuración con `. .\correo.configuracion.ps1`; `iniciar_motosmart.bat` la carga automáticamente.
+8. Inicia la aplicación. En PowerShell, carga la configuración con `. .\correo.configuracion.ps1`; `iniciar_motosmart.bat` la carga automáticamente y no exige una clave JWT.
 
    ```bash
    python run_server.py
@@ -102,7 +102,7 @@ La sección **Mis motos** incluye una ficha por vehículo que resume su último 
 
 ## Flujo de uso recomendado
 
-1. Crea el titular del taller con el comando local anterior. Los clientes se registran con su correo y deben abrir el enlace de verificación que se les envía antes de elegir una contraseña.
+1. Crea el titular del taller con el comando local anterior. Un cliente nuevo puede crear su cuenta y elegir su contraseña de inmediato. Si el correo ya tiene motos o historial registrado, debe verificarlo con el enlace enviado al correo para conectar esos datos de forma segura.
 2. Registra una moto y define si es electrónica o no electrónica.
 3. Para motos electrónicas, procesa una foto del escáner OCR. Para motos no electrónicas, registra la revisión manual.
 4. Consulta la prioridad, el diagnóstico y la recomendación resultante.
@@ -134,8 +134,8 @@ MotoSmart/
 
 ## Notas de seguridad
 
-- Configura una clave JWT privada, persistente y distinta por entorno antes de iniciar la aplicación.
-- Las nuevas cuentas de cliente solo se crean después de verificar el correo. Configura SMTP antes de habilitar el registro.
+- Para conservar sesiones entre reinicios y en despliegues, configura una clave JWT privada, persistente y distinta por entorno. En modo local se genera automáticamente una clave temporal si no se define.
+- Las cuentas nuevas se crean inmediatamente. Se verifica el correo antes de vincular datos de clientes preexistentes o cambiar una dirección de correo.
 - Los cambios de correo también requieren confirmar el enlace enviado a la nueva dirección; el historial del cliente se conserva al aplicar el cambio.
 - El registro público no permite crear titulares; utiliza `flask --app app crear-titular-taller` en la máquina que administra la base de datos.
 - Mantén las credenciales de PostgreSQL fuera del repositorio.

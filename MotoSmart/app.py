@@ -1,10 +1,12 @@
 from datetime import timedelta
 import os
+import secrets
+import warnings
 
 import click
 from flask import render_template
 from flask_jwt_extended import JWTManager
-from sqlalchemy import text
+from sqlalchemy import inspect, text
 
 from db import db, app
 from router.auth import auth_bp
@@ -20,10 +22,16 @@ from router.ordenes_servicio import ordenes_bp
 from modelo.usuario import Usuario
 
 jwt_secret = os.environ.get('MOTOSMART_JWT_SECRET_KEY', '')
-if len(jwt_secret) < 32:
-    raise RuntimeError(
-        'Define MOTOSMART_JWT_SECRET_KEY con una clave aleatoria de al menos 32 caracteres.'
+if not jwt_secret:
+    jwt_secret = secrets.token_urlsafe(48)
+    warnings.warn(
+        'MOTOSMART_JWT_SECRET_KEY no está configurada. Se generó una clave temporal; '
+        'los tokens dejarán de funcionar al reiniciar MotoSmart.',
+        RuntimeWarning,
+        stacklevel=1
     )
+elif len(jwt_secret) < 32:
+    raise RuntimeError('MOTOSMART_JWT_SECRET_KEY debe tener al menos 32 caracteres.')
 
 app.config['JWT_SECRET_KEY'] = jwt_secret
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=1)
@@ -77,6 +85,12 @@ def inicializar_base():
     # db.create_all no agrega columnas a tablas existentes.
     db.session.execute(text("ALTER TABLE motos ADD COLUMN IF NOT EXISTS tipo_tecnologia VARCHAR(20) NOT NULL DEFAULT 'electronica'"))
     db.session.execute(text("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS creado_por_id INTEGER REFERENCES usuarios(id)"))
+    columnas_registro = {
+        columna['name']
+        for columna in inspect(db.engine).get_columns('registros_pendientes')
+    }
+    if 'password_hash' not in columnas_registro:
+        db.session.execute(text('ALTER TABLE registros_pendientes ADD COLUMN password_hash TEXT'))
     db.session.commit()
 
 if __name__ == '__main__':

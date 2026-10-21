@@ -10,3 +10,4 @@ class RegistroPendiente(db.Model):
     token_hash = db.Column(db.String(64), unique=True, nullable=False)
     expires_at = db.Column(db.Integer, nullable=False)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    password_hash = db.Column(db.Text)

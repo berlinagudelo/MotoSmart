@@ -1,1 +1,39 @@
-  <section id="view-inventario" class="view"><div class="section-head"><div><p class="eyebrow">Taller</p><h2>Inventario</h2><p>Controla los repuestos, herramientas e insumos disponibles en el taller.</p></div><button id="add-item" class="btn primary">+ Agregar ítem</button></div><div class="stats"><article><span>▣</span><p>Ítems registrados</p><strong id="inventario-count">—</strong></article><article><span>!</span><p>Stock bajo</p><strong id="inventario-bajo-count">—</strong></article><article><span>◈</span><p>Categorías</p><strong id="inventario-cat-count">—</strong></article></div><section class="panel"><div class="table-wrap"><table><thead><tr><th>ID</th><th>Ítem</th><th>Categoría</th><th>Cantidad</th><th>Stock mínimo</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="inventario-body"></tbody></table></div><p id="inventario-empty" class="empty hidden">No hay ítems registrados en el inventario.</p></section></section>
+  <section id="view-inventario" class="view">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">Taller</p>
+        <h2>Inventario</h2>
+        <p>Controla los repuestos, herramientas e insumos disponibles en el taller.</p>
+      </div><button id="add-item" class="btn primary">+ Agregar ítem</button>
+    </div>
+    <div class="stats">
+      <article><span>▣</span>
+        <p>Ítems registrados</p><strong id="inventario-count">—</strong>
+      </article>
+      <article><span>!</span>
+        <p>Stock bajo</p><strong id="inventario-bajo-count">—</strong>
+      </article>
+      <article><span>◈</span>
+        <p>Categorías</p><strong id="inventario-cat-count">—</strong>
+      </article>
+    </div>
+    <section class="panel">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Ítem</th>
+              <th>Categoría</th>
+              <th>Cantidad</th>
+              <th>Stock mínimo</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="inventario-body"></tbody>
+        </table>
+      </div>
+      <p id="inventario-empty" class="empty hidden">No hay ítems registrados en el inventario.</p>
+    </section>
+  </section>

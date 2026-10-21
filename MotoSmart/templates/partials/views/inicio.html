@@ -1,1 +1,65 @@
-  <section id="view-inicio" class="view active"><div class="section-head welcome"><div><p class="eyebrow">Estado general</p><h2 id="home-heading">Todo listo para rodar.</h2><p id="welcome">Consulta el estado de tus motos y sus lecturas recientes.</p></div><button class="btn primary client" data-go="scanner">Analizar escáner →</button></div><div class="stats"><article><span>◈</span><p data-client>Mis motos</p><p data-admin class="hidden">Motos registradas</p><strong id="moto-count">—</strong></article><article><span>⌁</span><p>Diagnósticos</p><strong id="diag-count">—</strong></article><article class="status"><span>●</span><p>Estado del sistema</p><strong>Activo</strong></article></div><section id="workshop-dashboard" class="workshop-dashboard hidden"><section class="workshop-actions"><button class="workshop-action" data-go="ordenes"><b>▤</b><span><strong>Nueva orden</strong><small>Registra trabajo y repuestos</small></span><i>→</i></button><button class="workshop-action" data-go="citas"><b>□</b><span><strong>Ver agenda</strong><small>Gestiona las citas del taller</small></span><i>→</i></button><button class="workshop-action" data-go="inventario"><b>▣</b><span><strong>Inventario</strong><small>Revisa existencias y alertas</small></span><i>→</i></button></section><div class="workshop-grid"><section class="panel recent"><div class="panel-title"><div><h3>Órdenes recientes</h3><p>Actividad más reciente del taller.</p></div><button class="text-btn" data-go="ordenes">Ver todas →</button></div><div id="workshop-orders"><p class="empty">Cargando órdenes...</p></div></section><section class="panel recent"><div class="panel-title"><div><h3>Alertas de inventario</h3><p>Artículos que requieren reposición.</p></div><button class="text-btn" data-go="inventario">Ver inventario →</button></div><div id="workshop-stock"><p class="empty">Comprobando existencias...</p></div></section></div></section><section id="diagnostics-summary" class="panel recent"><div class="panel-title"><div><h3>Diagnósticos recientes</h3><p>Las últimas lecturas procesadas.</p></div><button class="text-btn" data-go="diagnosticos">Ver historial →</button></div><div id="recent"><p class="empty">Cargando información...</p></div></section></section>
+  <section id="view-inicio" class="view active">
+    <div class="section-head welcome">
+      <div>
+        <p class="eyebrow">Estado general</p>
+        <h2 id="home-heading">Todo listo para rodar.</h2>
+        <p id="welcome">Consulta el estado de tus motos y sus lecturas recientes.</p>
+      </div><button class="btn primary client" data-go="scanner">Analizar escáner →</button>
+    </div>
+    <div class="stats">
+      <article><span>◈</span>
+        <p data-client>Mis motos</p>
+        <p data-admin class="hidden">Motos registradas</p><strong id="moto-count">—</strong>
+      </article>
+      <article><span>⌁</span>
+        <p>Diagnósticos</p><strong id="diag-count">—</strong>
+      </article>
+      <article class="status"><span>●</span>
+        <p>Estado del sistema</p><strong>Activo</strong>
+      </article>
+    </div>
+    <section id="workshop-dashboard" class="workshop-dashboard hidden">
+      <section class="workshop-actions"><button class="workshop-action"
+          data-go="ordenes"><b>▤</b><span><strong>Nueva orden</strong><small>Registra trabajo y
+              repuestos</small></span><i>→</i></button><button class="workshop-action"
+          data-go="citas"><b>□</b><span><strong>Ver agenda</strong><small>Gestiona las citas del
+              taller</small></span><i>→</i></button><button class="workshop-action"
+          data-go="inventario"><b>▣</b><span><strong>Inventario</strong><small>Revisa existencias y
+              alertas</small></span><i>→</i></button></section>
+      <div class="workshop-grid">
+        <section class="panel recent">
+          <div class="panel-title">
+            <div>
+              <h3>Órdenes recientes</h3>
+              <p>Actividad más reciente del taller.</p>
+            </div><button class="text-btn" data-go="ordenes">Ver todas →</button>
+          </div>
+          <div id="workshop-orders">
+            <p class="empty">Cargando órdenes...</p>
+          </div>
+        </section>
+        <section class="panel recent">
+          <div class="panel-title">
+            <div>
+              <h3>Alertas de inventario</h3>
+              <p>Artículos que requieren reposición.</p>
+            </div><button class="text-btn" data-go="inventario">Ver inventario →</button>
+          </div>
+          <div id="workshop-stock">
+            <p class="empty">Comprobando existencias...</p>
+          </div>
+        </section>
+      </div>
+    </section>
+    <section id="diagnostics-summary" class="panel recent">
+      <div class="panel-title">
+        <div>
+          <h3>Diagnósticos recientes</h3>
+          <p>Las últimas lecturas procesadas.</p>
+        </div><button class="text-btn" data-go="diagnosticos">Ver historial →</button>
+      </div>
+      <div id="recent">
+        <p class="empty">Cargando información...</p>
+      </div>
+    </section>
+  </section>

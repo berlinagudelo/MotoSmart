@@ -19,8 +19,11 @@ REGISTRO_EXPIRA_SEGUNDOS = 30 * 60
 def register():
     data = request.get_json(silent=True) or {}
     username = str(data.get('username', '')).strip().lower()
+    password = str(data.get('password', ''))
     if not username or '@' not in username or len(username) > 50:
         return jsonify({'mensaje': 'Ingresa un correo válido.'}), 400
+    if len(password) < 6:
+        return jsonify({'mensaje': 'La contraseña debe tener al menos 6 caracteres.'}), 400
     if Usuario.query.filter_by(username=username).first():
         return jsonify({"mensaje": "Usuario ya existe"}), 400
 
@@ -34,6 +37,17 @@ def register():
     if not nombre or len(nombre) > 100:
         return jsonify({'mensaje': 'Ingresa un nombre válido.'}), 400
 
+    cliente = Cliente.query.filter_by(email=username).first()
+    if not cliente:
+        nuevo_usuario = Usuario(username=username, rol='cliente')
+        nuevo_usuario.set_password(password)
+        db.session.add(nuevo_usuario)
+        db.session.add(Cliente(nombre=nombre, email=username))
+        db.session.commit()
+        return jsonify({
+            'mensaje': 'Cuenta creada. Ya puedes iniciar sesión.'
+        }), 201
+
     token = secrets.token_urlsafe(32)
     ahora = int(time.time())
     RegistroPendiente.query.filter(
@@ -45,29 +59,34 @@ def register():
             return jsonify({
                 'mensaje': 'Ya hay un cambio de correo pendiente para esta dirección.'
             }), 409
-        return jsonify({
-            'mensaje': 'Ya enviamos un enlace a ese correo. Revisa tu bandeja de entrada.'
-        }), 202
+        if registro.password_hash:
+            return jsonify({
+                'mensaje': 'Ya enviamos un enlace a ese correo. Revisa tu bandeja de entrada.'
+            }), 202
     if not registro:
         registro = RegistroPendiente(email=username)
         db.session.add(registro)
+    usuario_pendiente = Usuario(username=username, rol='cliente')
+    usuario_pendiente.set_password(password)
     registro.nombre = nombre
+    registro.usuario_id = None
+    registro.password_hash = usuario_pendiente.password_hash
     registro.token_hash = hashlib.sha256(token.encode('utf-8')).hexdigest()
     registro.expires_at = ahora + REGISTRO_EXPIRA_SEGUNDOS
     db.session.commit()
 
     enlace = (
         f"{current_app.config['MOTOSMART_PUBLIC_URL']}/verificar-registro"
-        f"#{quote(token, safe='')}"
+        f"#claim={quote(token, safe='')}"
     )
     if not enviar_correo(
         username,
-        'Verifica tu correo para crear tu cuenta de MotoSmart',
+        'Verifica tu correo para reclamar tus datos de MotoSmart',
         f'Hola {nombre},\n\n'
-        'Para verificar que este correo te pertenece y terminar de crear tu cuenta, '
-        'abre este enlace:\n\n'
+        'Este correo ya tiene motos o historial asociado en MotoSmart. Para confirmar '
+        'que te pertenecen y conectar esos datos a tu nueva cuenta, abre este enlace:\n\n'
         f'{enlace}\n\n'
-        'El enlace vence en 30 minutos. Si no solicitaste esta cuenta, puedes ignorar este mensaje.'
+        'El enlace vence en 30 minutos. Si no solicitaste la cuenta, puedes ignorar este mensaje.'
     ):
         db.session.delete(registro)
         db.session.commit()
@@ -76,7 +95,7 @@ def register():
         }), 503
 
     return jsonify({
-        'mensaje': 'Te enviamos un enlace para verificar tu correo y terminar de crear tu cuenta.'
+        'mensaje': 'Ese correo ya tiene datos en el taller. Te enviamos un enlace para verificarlo y conectar esos datos a tu cuenta.'
     }), 202
 
 
@@ -89,14 +108,16 @@ def pagina_verificar_registro():
 def verificar_registro():
     data = request.get_json(silent=True) or {}
     token = str(data.get('token', ''))
-    password = str(data.get('password', ''))
-    if len(password) < 6:
-        return jsonify({'mensaje': 'La contraseña debe tener al menos 6 caracteres.'}), 400
 
     token_hash = hashlib.sha256(token.encode('utf-8')).hexdigest()
     ahora = int(time.time())
     registro = RegistroPendiente.query.filter_by(token_hash=token_hash).first()
-    if not registro or registro.usuario_id is not None or registro.expires_at <= ahora:
+    if (
+        not registro
+        or registro.usuario_id is not None
+        or registro.expires_at <= ahora
+        or not registro.password_hash
+    ):
         if registro:
             if registro.expires_at <= ahora:
                 db.session.delete(registro)
@@ -108,7 +129,7 @@ def verificar_registro():
         return jsonify({'mensaje': 'Ya existe una cuenta con ese correo.'}), 409
 
     nuevo_usuario = Usuario(username=registro.email, rol='cliente')
-    nuevo_usuario.set_password(password)
+    nuevo_usuario.password_hash = registro.password_hash
     db.session.add(nuevo_usuario)
     cliente = Cliente.query.filter_by(email=registro.email).first()
     if cliente:
@@ -119,7 +140,7 @@ def verificar_registro():
     db.session.delete(registro)
     db.session.commit()
     return jsonify({
-        'mensaje': 'Correo verificado y cuenta creada. Ya puedes iniciar sesión.'
+        'mensaje': 'Correo verificado. Tu cuenta ya está conectada con los datos del taller; inicia sesión.'
     }), 201
 
 

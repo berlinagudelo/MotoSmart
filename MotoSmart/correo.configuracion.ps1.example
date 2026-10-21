@@ -2,8 +2,9 @@
 # equipo y ejecútalo en la misma ventana de PowerShell antes de iniciar MotoSmart.
 # No compartas ni subas el archivo final al repositorio.
 
-# Genera una clave JWT aleatoria una sola vez y guarda el resultado en tu
-# archivo local correo.configuracion.ps1. No la cambies entre ejecuciones.
+# Opcional para desarrollo. Si no se configura, MotoSmart genera una clave
+# temporal y las sesiones actuales vencen al reiniciar la aplicación.
+# En producción, genera una clave aleatoria una sola vez y guárdala aquí.
 # $env:MOTOSMART_JWT_SECRET_KEY = 'PEGA_AQUI_TU_CLAVE_ALEATORIA'
 $env:MOTOSMART_DATABASE_URL = ''
 $env:MOTOSMART_PUBLIC_URL = 'http://127.0.0.1:5000'

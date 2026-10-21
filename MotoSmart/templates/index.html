@@ -1,29 +1,33 @@
 <!doctype html>
 <html lang="es">
 {% include 'partials/head.html' %}
+
 <body>
-{% include 'partials/overlays.html' %}
-{% include 'partials/auth.html' %}
-<div id="app-view" class="app hidden">
-{% include 'partials/sidebar.html' %}
-{% include 'partials/app-header.html' %}
-  <div class="content">
-{% include 'partials/views/ordenes.html' %}
-{% include 'partials/views/cuenta.html' %}
-{% include 'partials/views/inicio.html' %}
-{% include 'partials/views/motos.html' %}
-{% include 'partials/views/citas.html' %}
-{% include 'partials/views/scanner.html' %}
-{% include 'partials/views/revision-mecanica.html' %}
-{% include 'partials/views/resultados.html' %}
-{% include 'partials/views/prioridades.html' %}
-{% include 'partials/views/diagnosticos.html' %}
-{% include 'partials/views/inventario.html' %}
-{% include 'partials/views/mecanicos.html' %}
-{% include 'partials/views/facturas.html' %}
-{% include 'partials/views/facturacion.html' %}
- </div></section>
-</div>
-{% include 'partials/modals.html' %}
-<script src="../static/js/app.js?v=work-status-1"></script>
-</body></html>
+  {% include 'partials/overlays.html' %}
+  {% include 'partials/auth.html' %}
+  <div id="app-view" class="app hidden">
+    {% include 'partials/sidebar.html' %}
+    {% include 'partials/app-header.html' %}
+    <div class="content">
+      {% include 'partials/views/ordenes.html' %}
+      {% include 'partials/views/cuenta.html' %}
+      {% include 'partials/views/inicio.html' %}
+      {% include 'partials/views/motos.html' %}
+      {% include 'partials/views/citas.html' %}
+      {% include 'partials/views/scanner.html' %}
+      {% include 'partials/views/revision-mecanica.html' %}
+      {% include 'partials/views/resultados.html' %}
+      {% include 'partials/views/prioridades.html' %}
+      {% include 'partials/views/diagnosticos.html' %}
+      {% include 'partials/views/inventario.html' %}
+      {% include 'partials/views/mecanicos.html' %}
+      {% include 'partials/views/facturas.html' %}
+      {% include 'partials/views/facturacion.html' %}
+    </div>
+    </section>
+  </div>
+  {% include 'partials/modals.html' %}
+  <script src="../static/js/app.js?v=register-flow-2"></script>
+</body>
+
+</html>

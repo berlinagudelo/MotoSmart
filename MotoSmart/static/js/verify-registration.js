@@ -2,7 +2,12 @@ const form = document.querySelector('#verify-registration-form');
 const status = document.querySelector('#verification-status');
 const hash = window.location.hash.slice(1);
 const isEmailChange = hash.startsWith('email=');
-const token = isEmailChange ? hash.slice('email='.length) : hash;
+const isClaim = hash.startsWith('claim=');
+const token = isEmailChange
+  ? hash.slice('email='.length)
+  : isClaim
+    ? hash.slice('claim='.length)
+    : hash;
 window.history.replaceState(null, '', window.location.pathname);
 
 if (isEmailChange) {
@@ -11,6 +16,14 @@ if (isEmailChange) {
   form.querySelectorAll('label').forEach(label => { label.hidden = true; });
   form.querySelectorAll('input').forEach(input => { input.disabled = true; });
   form.querySelector('button').textContent = 'Confirmar cambio de correo';
+}
+
+if (isClaim) {
+  document.querySelector('.form-heading h1').textContent = 'Conecta tus datos del taller';
+  document.querySelector('.form-heading p').textContent = 'La contraseña que elegiste al registrarte se conservará.';
+  form.querySelectorAll('label').forEach(label => { label.hidden = true; });
+  form.querySelectorAll('input').forEach(input => { input.disabled = true; });
+  form.querySelector('button').textContent = 'Verificar correo y conectar datos';
 }
 
 if (!token) {
@@ -41,11 +54,6 @@ form.addEventListener('submit', async event => {
     return;
   }
 
-  const password = form.elements.password.value;
-  if (password !== form.elements.password_confirm.value) {
-    status.textContent = 'Las contraseñas no coinciden.';
-    return;
-  }
   if (!token) {
     status.textContent = 'El enlace no es válido. Solicita uno nuevo desde MotoSmart.';
     form.hidden = true;
@@ -56,6 +64,10 @@ form.addEventListener('submit', async event => {
   button.disabled = true;
   status.textContent = 'Verificando correo...';
   try {
+    const password = form.elements.password.value;
+    if (!isClaim && password !== form.elements.password_confirm.value) {
+      throw new Error('Las contraseñas no coinciden.');
+    }
     const response = await fetch('/register/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -1,7 +1,42 @@
 <main id="auth-view" class="auth-layout">
-  <section class="auth-intro"><div class="brand"><b>M</b> Moto<span>Smart</span></div><div class="intro-copy"><p class="eyebrow">Diagnóstico conectado</p><h1>Tu moto habla.<br><em>Nosotros la entendemos.</em></h1><p>Centraliza el estado de tus motos, interpreta lecturas del escáner y conserva cada diagnóstico en un mismo lugar.</p></div><div class="metrics"><div><strong>OCR</strong><small>Lectura de códigos</small></div><div><strong>24/7</strong><small>Historial disponible</small></div></div></section>
-  <section class="auth-panel"><div class="auth-card"><div class="auth-tabs"><button class="tab active" data-tab="login">Iniciar sesión</button><button class="tab" data-tab="register">Crear cuenta</button></div>
-    <form id="login-form" class="auth-form"><div class="form-heading"><h2>Bienvenido de vuelta</h2><p>Ingresa para consultar tu información.</p></div><label>Correo electrónico<input name="email" type="email" placeholder="nombre@correo.com" required></label><label>Contraseña<input name="password" type="password" placeholder="Tu contraseña" minlength="6" required></label><button class="btn primary wide">Entrar a MotoSmart <i>→</i></button></form>
-    <form id="register-form" class="auth-form hidden"><div class="form-heading"><h2>Crea tu cuenta</h2><p>Registra tus datos; te enviaremos un enlace para verificar tu correo y elegir una contraseña.</p></div><label>Nombre completo<input name="name" maxlength="100" placeholder="Tu nombre" required></label><label>Correo electrónico<input name="email" type="email" maxlength="50" placeholder="nombre@correo.com" required></label><button class="btn primary wide">Enviar enlace de verificación <i>→</i></button></form>
-  </div></section>
+  <section class="auth-intro">
+    <div class="brand"><b>M</b> Moto<span>Smart</span></div>
+    <div class="intro-copy">
+      <p class="eyebrow">Diagnóstico conectado</p>
+      <h1>Tu moto habla.<br><em>Nosotros la entendemos.</em></h1>
+      <p>Centraliza el estado de tus motos, interpreta lecturas del escáner y conserva cada
+        diagnóstico en un mismo lugar.</p>
+    </div>
+    <div class="metrics">
+      <div><strong>OCR</strong><small>Lectura de códigos</small></div>
+      <div><strong>24/7</strong><small>Historial disponible</small></div>
+    </div>
+  </section>
+  <section class="auth-panel">
+    <div class="auth-card">
+      <div class="auth-tabs"><button class="tab active" data-tab="login">Iniciar
+          sesión</button><button class="tab" data-tab="register">Crear cuenta</button></div>
+      <form id="login-form" class="auth-form">
+        <div class="form-heading">
+          <h2>Bienvenido de vuelta</h2>
+          <p>Ingresa para consultar tu información.</p>
+        </div><label>Correo electrónico<input name="email" type="email"
+            placeholder="nombre@correo.com" required></label><label>Contraseña<input name="password"
+            type="password" placeholder="Tu contraseña" minlength="6" required></label><button
+          class="btn primary wide">Entrar a MotoSmart <i>→</i></button>
+      </form>
+      <form id="register-form" class="auth-form hidden">
+        <div class="form-heading">
+          <h2>Crea tu cuenta</h2>
+          <p>Regístrate con tu correo y contraseña. Si ya tienes motos o historial en el taller, te
+            enviaremos un enlace para verificar el acceso a esos datos.</p>
+        </div><label>Nombre completo<input name="name" maxlength="100" placeholder="Tu nombre"
+            required></label><label>Correo electrónico<input name="email" type="email"
+            maxlength="50" placeholder="nombre@correo.com" required></label><label>Contraseña<input
+            name="password" type="password" placeholder="Mínimo 6 caracteres" minlength="6"
+            autocomplete="new-password" required></label><button class="btn primary wide">Crear mi
+          cuenta <i>→</i></button>
+      </form>
+    </div>
+  </section>
 </main>
