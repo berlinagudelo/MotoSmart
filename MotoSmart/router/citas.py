@@ -1,13 +1,13 @@
 from datetime import datetime
 
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt
 
 from db import db
 from modelo.citas import Cita
 from modelo.clientes import Cliente
 from modelo.moto import Moto
-from modelo.usuario import Usuario
+from services.tenencia import taller_actual_id, usuario_actual
 
 citas_bp = Blueprint('citas', __name__)
 
@@ -17,12 +17,18 @@ def mecanico_requerido():
 
 
 def cliente_actual(crear=False):
-    usuario = Usuario.query.get(int(get_jwt_identity()))
+    usuario = usuario_actual()
     if not usuario:
         return None
-    cliente = Cliente.query.filter_by(email=usuario.username).first()
+    cliente = Cliente.query.filter_by(
+        email=usuario.username, taller_id=usuario.taller_id
+    ).first()
     if not cliente and crear:
-        cliente = Cliente(nombre=usuario.username.split('@')[0], email=usuario.username)
+        cliente = Cliente(
+            nombre=usuario.username.split('@')[0],
+            email=usuario.username,
+            taller_id=usuario.taller_id,
+        )
         db.session.add(cliente)
         db.session.flush()
     return cliente
@@ -52,7 +58,12 @@ def crear_cita():
 
     data = request.get_json()
     cliente = cliente_actual(crear=True)
-    moto = Moto.query.filter_by(id=data.get('moto_id'), cliente_id=cliente.id).first() if cliente else None
+    moto = Moto.query.filter_by(
+        id=data.get('moto_id'),
+        cliente_id=cliente.id,
+        taller_id=taller_actual_id(),
+        transferida=False,
+    ).first() if cliente else None
     if not moto:
         return jsonify({'error': 'La moto seleccionada no existe'}), 404
     try:
@@ -60,7 +71,10 @@ def crear_cita():
     except (KeyError, ValueError):
         return jsonify({'error': 'La fecha no es valida'}), 400
 
-    cita = Cita(fecha=fecha, descripcion=data.get('descripcion', '').strip(), moto_id=moto.id)
+    cita = Cita(
+        fecha=fecha, descripcion=data.get('descripcion', '').strip(),
+        moto_id=moto.id, taller_id=taller_actual_id()
+    )
     db.session.add(cita)
     db.session.commit()
     return jsonify({'mensaje': 'Cita agendada con exito', 'cita': serializar_cita(cita)}), 201
@@ -71,7 +85,8 @@ def crear_cita():
 def listar_citas_detalle():
     if not mecanico_requerido():
         return jsonify({'error': 'Solo mecanicos pueden ver las citas'}), 403
-    return jsonify([serializar_cita(cita) for cita in Cita.query.order_by(Cita.fecha.asc()).all()])
+    citas = Cita.query.filter_by(taller_id=taller_actual_id()).order_by(Cita.fecha.asc()).all()
+    return jsonify([serializar_cita(cita) for cita in citas])
 
 
 @citas_bp.route('/mis_citas', methods=['GET'])
@@ -82,7 +97,9 @@ def listar_mis_citas():
     cliente = cliente_actual()
     if not cliente:
         return jsonify([])
-    citas = Cita.query.join(Moto).filter(Moto.cliente_id == cliente.id).order_by(Cita.fecha.asc()).all()
+    citas = Cita.query.filter_by(taller_id=taller_actual_id()).join(Moto).filter(
+        Moto.cliente_id == cliente.id
+    ).order_by(Cita.fecha.asc()).all()
     return jsonify([serializar_cita(cita) for cita in citas])
 
 
@@ -92,7 +109,9 @@ def actualizar_cita(id):
     if not mecanico_requerido():
         return jsonify({'error': 'Solo mecanicos pueden editar citas'}), 403
 
-    cita = Cita.query.get_or_404(id)
+    cita = Cita.query.filter_by(
+        id=id, taller_id=taller_actual_id()
+    ).first_or_404()
     data = request.get_json()
     if 'fecha' in data:
         try:
@@ -100,7 +119,11 @@ def actualizar_cita(id):
         except ValueError:
             return jsonify({'error': 'La fecha no es valida'}), 400
     if 'moto_id' in data:
-        moto = Moto.query.get(data['moto_id'])
+        moto = Moto.query.filter_by(
+            id=data['moto_id'],
+            taller_id=taller_actual_id(),
+            transferida=False,
+        ).first()
         if not moto:
             return jsonify({'error': 'La moto seleccionada no existe'}), 404
         cita.moto_id = moto.id
@@ -114,7 +137,9 @@ def actualizar_cita(id):
 def eliminar_cita(id):
     if not mecanico_requerido():
         return jsonify({'error': 'Solo mecanicos pueden eliminar citas'}), 403
-    cita = Cita.query.get_or_404(id)
+    cita = Cita.query.filter_by(
+        id=id, taller_id=taller_actual_id()
+    ).first_or_404()
     db.session.delete(cita)
     db.session.commit()
     return jsonify({'mensaje': 'Cita eliminada con exito'})

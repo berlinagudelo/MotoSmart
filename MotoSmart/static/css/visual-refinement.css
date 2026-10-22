@@ -1,0 +1,344 @@
+html {
+  scroll-padding-top: 24px;
+}
+
+body {
+  min-width: 320px;
+}
+
+.workspace {
+  min-width: 0;
+}
+
+.content {
+  width: 100%;
+  min-width: 0;
+  margin-inline: auto;
+}
+
+.view,
+.view > section,
+.view > div {
+  min-width: 0;
+}
+
+.section-head {
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.section-head > div {
+  min-width: 0;
+}
+
+.section-head h2 {
+  line-height: 1;
+}
+
+.section-head > div > p:not(.eyebrow) {
+  max-width: 680px;
+  line-height: 1.55;
+}
+
+.panel-title {
+  align-items: center;
+  gap: 16px;
+}
+
+.panel-title > div {
+  min-width: 0;
+}
+
+.stats {
+  align-items: stretch;
+}
+
+.stats article {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto 1fr auto;
+  align-items: start;
+}
+
+.stats article > span {
+  grid-column: 2;
+  grid-row: 1;
+  color: #b7a2a3;
+}
+
+.stats article > p {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  align-self: end;
+  margin: 14px 0 8px;
+}
+
+.stats article > strong {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  align-self: end;
+  line-height: 1;
+}
+
+.form-grid {
+  column-gap: 18px;
+  row-gap: 17px;
+}
+
+.form-grid label {
+  min-width: 0;
+}
+
+.form-grid .actions {
+  justify-content: flex-end;
+}
+
+.actions {
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.table-wrap {
+  min-width: 0;
+}
+
+table th,
+table td {
+  vertical-align: middle;
+}
+
+dialog .modal-title {
+  align-items: center;
+}
+
+dialog .modal-title .close,
+dialog .modal-title .close-cita,
+dialog .modal-title .close-inventario,
+dialog .modal-title .close-factura,
+dialog .modal-title .close-orden {
+  flex: 0 0 auto;
+}
+
+.landing .btn.ghost,
+.workshop-onboarding .landing-back {
+  border-color: #77777c;
+  color: #f3f3f2;
+}
+
+.landing .btn.ghost:hover {
+  border-color: #aaaab0;
+  background: #ffffff0a;
+}
+
+.landing .btn.primary,
+.workshop-card .btn.primary {
+  color: #fff;
+}
+
+.client-service-hero .btn.ghost,
+.scan-complete .btn.ghost,
+.scanner .btn.ghost {
+  border-color: #66666c;
+  color: #f3f3f2;
+}
+
+.auth-intro::before,
+.workspace header::after,
+.stats article::after,
+.client-service-stats article::after {
+  display: none;
+  animation: none;
+}
+
+.btn.primary::after {
+  display: none;
+}
+
+.nav.active {
+  box-shadow: none;
+  border-left: 3px solid var(--red);
+}
+
+.btn:focus-visible,
+.nav:focus-visible,
+.tab:focus-visible,
+.text-btn:focus-visible,
+.account-dropdown button:focus-visible,
+.landing-back:focus-visible,
+.workshop-action:focus-visible,
+#account-menu-button:focus-visible {
+  outline: 2px solid #ff7772;
+  outline-offset: 3px;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  transform: none;
+  outline: 2px solid #df302f70;
+  outline-offset: 1px;
+  box-shadow: none;
+}
+
+.stats article:hover,
+.priority-card:hover,
+.client-result-card:hover,
+.diagnostic-card:hover,
+.panel:hover,
+.scanner aside:hover,
+.client-service-hero:hover,
+.moto-health-card:hover {
+  box-shadow: none;
+}
+
+.stats article:hover,
+.priority-card:hover,
+.client-result-card:hover,
+.diagnostic-card:hover,
+.panel:hover,
+.scanner aside:hover,
+.client-service-hero:hover,
+.moto-health-card:hover {
+  transform: none;
+}
+
+.user:hover > b {
+  box-shadow: none;
+  transform: none;
+}
+
+.scan-complete-mark,
+.garage-floor,
+.garage-door,
+.moto-health-ring,
+.moto-health-status i,
+.client-welcome-core {
+  box-shadow: none;
+}
+
+.upload:hover #upload-icon {
+  animation: none;
+}
+
+#ocr-result.result-reveal {
+  animation: result-reveal-clean 420ms var(--motion-ease) both;
+}
+
+.account-dropdown {
+  box-shadow: 0 8px 20px #0005;
+}
+
+.toast {
+  box-shadow: 0 6px 18px #0004;
+}
+
+@keyframes result-reveal-clean {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 760px) {
+  .content {
+    padding-top: 28px;
+    padding-bottom: 32px;
+  }
+
+  .section-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 21px;
+  }
+
+  .section-head > .btn {
+    align-self: flex-start;
+  }
+
+  .stats {
+    gap: 10px;
+  }
+
+  .stats article {
+    min-width: 0;
+    padding: 16px;
+  }
+
+  .stats article > strong {
+    overflow-wrap: anywhere;
+    font-size: clamp(28px, 7vw, 40px);
+  }
+
+  .client-service-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .client-service-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .workshop-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .section-head h2 {
+    font-size: 36px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .stats article {
+    min-height: 112px;
+  }
+
+  .client-service-stats {
+    gap: 7px;
+  }
+
+  .client-service-stats article {
+    padding: 13px 9px;
+  }
+
+  .client-service-stats strong {
+    font-size: clamp(20px, 6vw, 28px);
+  }
+
+  .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .form-grid > * {
+    grid-column: 1;
+  }
+
+  .actions {
+    justify-content: stretch;
+  }
+
+  .actions .btn {
+    flex: 1 1 auto;
+  }
+
+  .landing .btn.ghost {
+    color: #f3f3f2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+}

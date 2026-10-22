@@ -11,3 +11,4 @@ class ItemInventario(db.Model):
     cantidad = db.Column(db.Integer, nullable=False, default=0)
     stock_minimo = db.Column(db.Integer, nullable=False, default=0)
     proveedor = db.Column(db.String(100), nullable=True)
+    taller_id = db.Column(db.Integer, db.ForeignKey('talleres.id'), nullable=False, index=True)

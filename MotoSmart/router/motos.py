@@ -1,12 +1,11 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt
 from sqlalchemy.exc import IntegrityError
 
 from db import db
 from modelo.clientes import Cliente
 from modelo.moto import Moto
-from modelo.usuario import Usuario
-from roles import rol_required
+from services.tenencia import taller_actual_id, usuario_actual
 
 motos_bp = Blueprint('motos', __name__)
 TIPOS_TECNOLOGIA = ('electronica', 'no_electronica')
@@ -14,7 +13,7 @@ TIPOS_TECNOLOGIA = ('electronica', 'no_electronica')
 
 def serializar_moto(moto, incluir_cliente=False):
     ordenes = sorted(
-        moto.ordenes_servicio,
+        (orden for orden in moto.ordenes_servicio if orden.taller_id == taller_actual_id()),
         key=lambda orden: orden.actualizada_en or orden.creada_en,
         reverse=True
     )
@@ -46,19 +45,30 @@ def serializar_moto(moto, incluir_cliente=False):
 @jwt_required()
 def crear_moto():
     rol = get_jwt().get('rol')
+    usuario = usuario_actual()
+    if not usuario:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+    taller_id = usuario.taller_id
     if rol not in ('cliente', 'mecanico'):
         return jsonify({'error': 'No tienes permisos para registrar motos'}), 403
 
     data = request.get_json()
     placa = data['placa'].strip().upper()
-    if Moto.query.filter_by(placa=placa).first():
+    if Moto.query.filter_by(
+        placa=placa, taller_id=taller_id, transferida=False
+    ).first():
         return jsonify({'error': 'Ya existe una moto con esa placa'}), 400
 
     if rol == 'cliente':
-        usuario = Usuario.query.get(int(get_jwt_identity()))
-        cliente = Cliente.query.filter_by(email=usuario.username).first() if usuario else None
-        if not cliente and usuario:
-            cliente = Cliente(nombre=usuario.username.split('@')[0], email=usuario.username)
+        cliente = Cliente.query.filter_by(
+            email=usuario.username, taller_id=taller_id
+        ).first()
+        if not cliente:
+            cliente = Cliente(
+                nombre=usuario.username.split('@')[0],
+                email=usuario.username,
+                taller_id=taller_id,
+            )
             db.session.add(cliente)
             db.session.flush()
         if not cliente:
@@ -67,11 +77,14 @@ def crear_moto():
         correo_cliente = data.get('cliente_email', '').strip().lower()
         if not correo_cliente:
             return jsonify({'error': 'Ingresa el correo del cliente'}), 400
-        cliente = Cliente.query.filter_by(email=correo_cliente).first()
+        cliente = Cliente.query.filter_by(
+            email=correo_cliente, taller_id=taller_id
+        ).first()
         if not cliente:
             cliente = Cliente(
                 nombre=data.get('cliente_nombre', '').strip() or correo_cliente.split('@')[0],
-                email=correo_cliente
+                email=correo_cliente,
+                taller_id=taller_id,
             )
             db.session.add(cliente)
             db.session.flush()
@@ -85,7 +98,8 @@ def crear_moto():
         marca=data['marca'],
         modelo=data['modelo'],
         tipo_tecnologia=tipo_tecnologia,
-        cliente_id=cliente.id
+        cliente_id=cliente.id,
+        taller_id=taller_id,
     )
     db.session.add(nueva_moto)
     try:
@@ -99,15 +113,21 @@ def crear_moto():
 @motos_bp.route('/motos', methods=['GET'])
 @jwt_required()
 def listar_motos():
-    usuario = Usuario.query.get(int(get_jwt_identity()))
+    usuario = usuario_actual()
     if not usuario:
         return jsonify({'error': 'Usuario no encontrado'}), 404
 
     if get_jwt().get('rol') in ('mecanico', 'admin'):
-        motos = Moto.query.all()
+        motos = Moto.query.filter_by(
+            taller_id=usuario.taller_id, transferida=False
+        ).all()
     else:
-        cliente = Cliente.query.filter_by(email=usuario.username).first()
-        motos = Moto.query.filter_by(cliente_id=cliente.id).all() if cliente else []
+        cliente = Cliente.query.filter_by(
+            email=usuario.username, taller_id=usuario.taller_id
+        ).first()
+        motos = Moto.query.filter_by(
+            cliente_id=cliente.id, taller_id=usuario.taller_id, transferida=False
+        ).all() if cliente else []
 
     return jsonify([serializar_moto(m) for m in motos])
 
@@ -118,7 +138,9 @@ def listar_motos_detalle():
     if get_jwt().get('rol') not in ('mecanico', 'admin'):
         return jsonify({'error': 'No tienes permisos para esta accion'}), 403
 
-    motos = Moto.query.all()
+    motos = Moto.query.filter_by(
+        taller_id=taller_actual_id(), transferida=False
+    ).all()
     return jsonify([serializar_moto(m, incluir_cliente=True) for m in motos])
 
 
@@ -127,7 +149,9 @@ def listar_motos_detalle():
 def borrar_moto(id):
     if get_jwt().get('rol') != 'mecanico':
         return jsonify({'error': 'Solo mecanicos pueden eliminar motos'}), 403
-    moto = Moto.query.get_or_404(id)
+    moto = Moto.query.filter_by(
+        id=id, taller_id=taller_actual_id(), transferida=False
+    ).first_or_404()
     db.session.delete(moto)
     db.session.commit()
     return jsonify({'mensaje': 'Moto eliminada con exito'}), 200

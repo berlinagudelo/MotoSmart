@@ -1,0 +1,45 @@
+#mecanico-form .actions {
+  align-items: center;
+}
+
+#mecanico-form button:disabled {
+  min-width: 190px;
+}
+
+#factura-modal .modal-title > .close-factura {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  padding: 0 0 2px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  color: #777;
+  font: 26px/1 var(--display);
+  transition: color 150ms ease, background-color 150ms ease, border-color 150ms ease;
+}
+
+#factura-modal .modal-title > .close-factura:hover {
+  border-color: #df302f30;
+  background: #df302f0d;
+  color: #b92324;
+}
+
+#factura-modal .modal-title > .close-factura:focus-visible {
+  border-color: #df302f70;
+  outline: 2px solid #df302f55;
+  outline-offset: 2px;
+  background: #df302f0d;
+  box-shadow: none;
+  color: #b92324;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #factura-modal .modal-title > .close-factura {
+    transition: none;
+  }
+}

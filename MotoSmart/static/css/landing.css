@@ -1,0 +1,236 @@
+.landing {
+  min-height: 100vh;
+  padding: 0 clamp(22px, 7vw, 110px) 60px;
+  background:
+    radial-gradient(ellipse at 87% 15%, #49212280 0, transparent 34%),
+    linear-gradient(130deg, #0a0a0b, #171719 60%, #101012);
+}
+
+.landing-header {
+  display: flex;
+  min-height: 88px;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #ffffff14;
+}
+
+.landing-hero {
+  display: grid;
+  min-height: 510px;
+  grid-template-columns: minmax(0, 1.3fr) minmax(260px, .7fr);
+  align-items: center;
+  gap: clamp(36px, 8vw, 120px);
+  padding: 75px 0;
+}
+
+.landing-copy {
+  max-width: 760px;
+}
+
+.landing-copy h1 {
+  max-width: 720px;
+  margin: 16px 0 22px;
+  font: 600 clamp(54px, 8vw, 105px)/.88 var(--display);
+  text-transform: uppercase;
+}
+
+.landing-copy h1 em {
+  color: var(--red);
+  font-style: normal;
+}
+
+.landing-copy>p:not(.eyebrow),
+.landing-highlight>p:not(.eyebrow) {
+  max-width: 610px;
+  color: #c2c2c5;
+  line-height: 1.8;
+}
+
+.landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.landing-highlight {
+  position: relative;
+  padding: 35px 30px;
+  overflow: hidden;
+  border: 1px solid #ffffff20;
+  border-radius: 5px;
+  background: linear-gradient(145deg, #261a1b, #171719);
+}
+
+.landing-highlight h2 {
+  position: relative;
+  z-index: 1;
+  margin: 16px 0;
+  font: 600 38px/.98 var(--display);
+  text-transform: uppercase;
+}
+
+.landing-highlight>p:not(.eyebrow) {
+  position: relative;
+  z-index: 1;
+  color: #c7b9ba;
+  font-size: 13px;
+}
+
+.landing-orbit {
+  position: absolute;
+  top: -38px;
+  right: -23px;
+  display: grid;
+  width: 130px;
+  height: 130px;
+  place-items: center;
+  border: 18px solid #df302f22;
+  border-radius: 50%;
+  color: #ffffff12;
+  font: italic 70px var(--display);
+}
+
+.landing-about {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  padding: 35px 0;
+  border-top: 1px solid #ffffff18;
+}
+
+.landing-about h2 {
+  max-width: 500px;
+  margin: 10px 0;
+  font: 600 44px/.95 var(--display);
+  text-transform: uppercase;
+}
+
+.landing-about>p {
+  align-self: end;
+  margin: 0;
+  color: #b8b8bb;
+  line-height: 1.8;
+}
+
+.landing-features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-top: 24px;
+}
+
+.landing-features article {
+  padding: 22px;
+  border: 1px solid #ffffff18;
+  border-radius: 4px;
+  background: #ffffff05;
+}
+
+.landing-features article>strong {
+  color: #ff6965;
+  font: 28px var(--display);
+}
+
+.landing-features h3 {
+  margin: 16px 0 7px;
+  font-size: 14px;
+}
+
+.landing-features p {
+  margin: 0;
+  color: #aaa;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.landing-back {
+  margin: 0 0 25px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  color: #7e3031;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.auth-back {
+  margin: -24px 0 22px;
+}
+
+.workshop-onboarding {
+  min-height: 100vh;
+  padding: 32px clamp(22px, 7vw, 110px);
+  background: linear-gradient(130deg, #0b0b0c, #201719);
+}
+
+.workshop-card {
+  width: min(100%, 560px);
+  margin: 2vh auto;
+  padding: clamp(22px, 4vw, 42px);
+  border-radius: 4px;
+  background: #f2f2f0;
+  color: #171719;
+}
+
+.workshop-card>.brand {
+  margin-bottom: 38px;
+  color: #171719;
+}
+
+.workshop-card .form-heading h2 {
+  margin: 0;
+}
+
+.workshop-card .form-heading p:not(.eyebrow) {
+  color: #777;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.workshop-card .form-grid {
+  margin: 0;
+}
+
+.form-status {
+  min-height: 1em;
+  margin: 0;
+  color: #793334;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.account-workshop {
+  margin: 0 0 20px;
+  color: #aaa;
+  font-size: 12px;
+}
+
+.account-workshop strong {
+  color: #eee;
+}
+
+.account-transfer-note {
+  margin: 0;
+  color: #aaa;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 760px) {
+  .landing-hero {
+    min-height: auto;
+    grid-template-columns: 1fr;
+    gap: 35px;
+    padding: 58px 0;
+  }
+
+  .landing-about {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .landing-features {
+    grid-template-columns: 1fr;
+  }
+}

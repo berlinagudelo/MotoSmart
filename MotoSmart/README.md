@@ -80,15 +80,16 @@ La sección **Mis motos** incluye una ficha por vehículo que resume su último 
    $rng.Dispose()
    ```
 
-   Si decides usarla, guarda el resultado como `MOTOSMART_JWT_SECRET_KEY` en tu archivo local `correo.configuracion.ps1` (copia `correo.configuracion.ps1.example`) y consérvala entre ejecuciones. Configura `MOTOSMART_DATABASE_URL` con la conexión privada a PostgreSQL y las variables SMTP descritas en **Notificaciones por correo**. SMTP es necesario solo cuando se reclama historial previo o se cambia el correo; una cuenta nueva se crea sin enviar correo. En un despliegue remoto, establece `MOTOSMART_PUBLIC_URL` con la URL pública HTTPS de la aplicación. Para usar los comandos desde PowerShell, carga la configuración en esa misma ventana con `. .\correo.configuracion.ps1`.
+   Si decides usarla, guarda el resultado como `MOTOSMART_JWT_SECRET_KEY` en tu archivo local `correo.configuracion.ps1` (copia `correo.configuracion.ps1.example`) y consérvala entre ejecuciones. Configura `MOTOSMART_DATABASE_URL` con la conexión privada a PostgreSQL y las variables SMTP descritas en **Notificaciones por correo**. SMTP se necesita para reclamar datos previos, cambiar el correo o confirmar una mudanza de taller. En un despliegue remoto, establece `MOTOSMART_PUBLIC_URL` con la URL pública HTTPS de la aplicación. Para usar los comandos desde PowerShell, carga la configuración en esa misma ventana con `. .\correo.configuracion.ps1`.
 
-7. Crea el titular del taller desde una consola local, nunca desde el registro público:
+7. Si la base contiene el esquema anterior a los talleres, reiníciala una sola vez desde la carpeta `MotoSmart`:
 
    ```powershell
-   flask --app app crear-titular-taller
+   . .\correo.configuracion.ps1
+   python -m flask --app app reiniciar-base-talleres --confirmar
    ```
 
-   El comando solicita el correo y la contraseña, y solo permite crear el titular si todavía no existe uno. Los mecánicos adicionales se crean desde **Mi equipo**.
+   **Este comando elimina todas las tablas y todos sus datos.** Úsalo únicamente si confirmas que la base seleccionada puede vaciarse. Una base nueva crea el esquema automáticamente al iniciar, por lo que no requiere este comando.
 
 8. Inicia la aplicación. En PowerShell, carga la configuración con `. .\correo.configuracion.ps1`; `iniciar_motosmart.bat` la carga automáticamente y no exige una clave JWT.
 
@@ -102,11 +103,20 @@ La sección **Mis motos** incluye una ficha por vehículo que resume su último 
 
 ## Flujo de uso recomendado
 
-1. Crea el titular del taller con el comando local anterior. Un cliente nuevo puede crear su cuenta y elegir su contraseña de inmediato. Si el correo ya tiene motos o historial registrado, debe verificarlo con el enlace enviado al correo para conectar esos datos de forma segura.
-2. Registra una moto y define si es electrónica o no electrónica.
-3. Para motos electrónicas, procesa una foto del escáner OCR. Para motos no electrónicas, registra la revisión manual.
-4. Consulta la prioridad, el diagnóstico y la recomendación resultante.
-5. El cliente puede revisar la ficha de estado de su moto, solicitar una cita y consultar sus facturas.
+1. Desde la portada, el titular puede registrar un taller con nombre, ciudad y teléfono. La cuenta que lo crea queda como titular y puede agregar mecánicos desde **Mi equipo**.
+2. Los clientes crean su cuenta y eligen a qué taller pertenecer. Si su correo ya tiene datos previos en ese taller, deben verificarlo por correo para reclamarlos.
+3. Registra una moto y define si es electrónica o no electrónica.
+4. Para motos electrónicas, procesa una foto del escáner OCR. Para motos no electrónicas, registra la revisión manual.
+5. Consulta la prioridad, el diagnóstico y la recomendación resultante.
+6. Los clientes pueden solicitar citas, revisar servicios y cambiar de taller desde los ajustes de su cuenta. La mudanza se confirma por correo: crea una copia de cada moto y pasa sus tres diagnósticos más recientes al taller nuevo. Las citas, órdenes, facturas y el historial completo quedan en el taller de origen.
+
+Cada taller tiene sus propias cuentas de personal, clientes, motos, diagnósticos, citas, facturación e inventario. Las rutas de la API aplican el taller de la cuenta autenticada; no se acepta elegir otro taller enviando un identificador desde el navegador.
+
+Para ejecutar las pruebas de aislamiento en una base SQLite temporal:
+
+```powershell
+python -m unittest discover -s tests -v
+```
 
 ## Ejecutable de Windows
 
@@ -124,7 +134,7 @@ El ejecutable se genera en `dist\MotoSmart\MotoSmart.exe`. Antes de compilar, ve
 MotoSmart/
 ├── app.py                 # Configuración de Flask y rutas
 ├── db.py                  # Configuración de SQLAlchemy/PostgreSQL
-├── modelo/                # Entidades de base de datos
+├── modelo/                # Talleres y entidades de base de datos
 ├── router/                # Endpoints y lógica de cada módulo
 ├── services/              # Priorización de diagnósticos
 ├── static/                # Estilos y JavaScript del cliente
@@ -135,9 +145,10 @@ MotoSmart/
 ## Notas de seguridad
 
 - Para conservar sesiones entre reinicios y en despliegues, configura una clave JWT privada, persistente y distinta por entorno. En modo local se genera automáticamente una clave temporal si no se define.
-- Las cuentas nuevas se crean inmediatamente. Se verifica el correo antes de vincular datos de clientes preexistentes o cambiar una dirección de correo.
+- Las cuentas nuevas se crean inmediatamente después de elegir un taller. Se verifica el correo antes de vincular datos preexistentes, cambiar una dirección o transferir motos a otro taller.
 - Los cambios de correo también requieren confirmar el enlace enviado a la nueva dirección; el historial del cliente se conserva al aplicar el cambio.
-- El registro público no permite crear titulares; utiliza `flask --app app crear-titular-taller` en la máquina que administra la base de datos.
+- El registro de taller crea una cuenta de titular asociada al nuevo espacio. Los clientes y el personal quedan limitados a la información de su taller.
+- El comando `reiniciar-base-talleres --confirmar` es destructivo; no lo ejecutes sobre una base con información que quieras conservar.
 - Mantén las credenciales de PostgreSQL fuera del repositorio.
 - Usa HTTPS, variables de entorno y un servidor de producción para publicar la aplicación.
 

@@ -1,0 +1,23 @@
+<main id="workshop-view" class="workshop-onboarding hidden">
+  <button class="landing-back" type="button" data-back-landing>← Volver al inicio</button>
+  <section class="workshop-card">
+    <a class="brand" href="/"><b>M</b> Moto<span>Smart</span></a>
+    <div class="form-heading">
+      <p class="eyebrow">Nuevo espacio de trabajo</p>
+      <h2>Registra tu taller</h2>
+      <p>Al crear el taller, tu cuenta quedará como titular y podrás invitar a tu equipo.</p>
+    </div>
+    <form id="workshop-form" class="auth-form">
+      <label>Nombre del taller<input name="nombre" maxlength="100" required></label>
+      <div class="form-grid">
+        <label>Ciudad<input name="ciudad" maxlength="80" required></label>
+        <label>Teléfono<input name="telefono" type="tel" maxlength="20" required></label>
+      </div>
+      <label>Nombre del titular<input name="nombre_titular" maxlength="100" required></label>
+      <label>Correo electrónico<input name="email" type="email" maxlength="50" autocomplete="email" required></label>
+      <label>Contraseña<input name="password" type="password" minlength="6" autocomplete="new-password" required></label>
+      <button class="btn primary wide">Crear taller <i>→</i></button>
+      <p class="form-status" id="workshop-status" role="status"></p>
+    </form>
+  </section>
+</main>

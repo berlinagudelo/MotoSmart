@@ -7,6 +7,8 @@ class Usuario(db.Model):
     username = db.Column(db.String(50), unique=True, nullable=False)
     password_hash = db.Column(db.Text, nullable=False)
     rol = db.Column(db.String(20), nullable=False, default="cliente")
+    nombre = db.Column(db.String(100))
+    taller_id = db.Column(db.Integer, db.ForeignKey('talleres.id'), nullable=False, index=True)
     creado_por_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=True)
 
     def set_password(self, password):

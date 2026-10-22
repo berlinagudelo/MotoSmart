@@ -1,4 +1,4 @@
-<main id="auth-view" class="auth-layout">
+<main id="auth-view" class="auth-layout hidden">
   <section class="auth-intro">
     <div class="brand"><b>M</b> Moto<span>Smart</span></div>
     <div class="intro-copy">
@@ -16,6 +16,7 @@
     <div class="auth-card">
       <div class="auth-tabs"><button class="tab active" data-tab="login">Iniciar
           sesión</button><button class="tab" data-tab="register">Crear cuenta</button></div>
+      <button class="landing-back auth-back" type="button" data-back-landing>← Volver al inicio</button>
       <form id="login-form" class="auth-form">
         <div class="form-heading">
           <h2>Bienvenido de vuelta</h2>
@@ -28,14 +29,15 @@
       <form id="register-form" class="auth-form hidden">
         <div class="form-heading">
           <h2>Crea tu cuenta</h2>
-          <p>Regístrate con tu correo y contraseña. Si ya tienes motos o historial en el taller, te
-            enviaremos un enlace para verificar el acceso a esos datos.</p>
+          <p>Elige el taller al que perteneces para consultar allí tus motos y servicios.</p>
         </div><label>Nombre completo<input name="name" maxlength="100" placeholder="Tu nombre"
             required></label><label>Correo electrónico<input name="email" type="email"
             maxlength="50" placeholder="nombre@correo.com" required></label><label>Contraseña<input
             name="password" type="password" placeholder="Mínimo 6 caracteres" minlength="6"
-            autocomplete="new-password" required></label><button class="btn primary wide">Crear mi
+            autocomplete="new-password" required></label><label>Taller<select name="taller_id"
+            id="register-workshop" required><option value="">Cargando talleres...</option></select></label><button class="btn primary wide">Crear mi
           cuenta <i>→</i></button>
+        <p id="register-workshop-message" class="form-status" role="status"></p>
       </form>
     </div>
   </section>

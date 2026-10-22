@@ -4,13 +4,13 @@ from io import BytesIO
 
 from flask import Blueprint, jsonify, request
 from flask import send_file
-from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
+from flask_jwt_extended import get_jwt, jwt_required
 
 from db import db
 from modelo.clientes import Cliente
 from modelo.factura import Factura
 from modelo.moto import Moto
-from modelo.usuario import Usuario
+from services.tenencia import taller_actual_id, usuario_actual
 
 
 facturas_bp = Blueprint('facturas', __name__)
@@ -48,7 +48,9 @@ def validar_datos(data):
         return None, 'Ingresa un detalle de servicio de máximo 500 caracteres.'
     if subtotal < 0 or iva < 0 or iva > 100:
         return None, 'El subtotal y el IVA deben tener valores válidos.'
-    moto = Moto.query.get(moto_id)
+    moto = Moto.query.filter_by(
+        id=moto_id, taller_id=taller_actual_id(), transferida=False
+    ).first()
     if not moto:
         return None, 'La moto seleccionada no existe.'
     if estado not in ESTADOS:
@@ -65,8 +67,15 @@ def factura_permitida(factura):
         return True
     if get_jwt().get('rol') != 'cliente':
         return False
-    usuario = Usuario.query.get(int(get_jwt_identity()))
-    return bool(usuario and factura.moto and factura.moto.cliente and factura.moto.cliente.email == usuario.username)
+    usuario = usuario_actual()
+    return bool(
+        usuario
+        and factura.taller_id == usuario.taller_id
+        and factura.moto
+        and factura.moto.cliente
+        and factura.moto.cliente.email == usuario.username
+        and factura.moto.cliente.taller_id == usuario.taller_id
+    )
 
 
 def texto_pdf(valor):
@@ -123,7 +132,9 @@ def generar_pdf_factura(factura):
 def listar_facturas():
     if not es_mecanico():
         return jsonify({'error': 'Solo mecánicos pueden ver la facturación del taller.'}), 403
-    facturas = Factura.query.order_by(Factura.fecha.desc(), Factura.id.desc()).all()
+    facturas = Factura.query.filter_by(
+        taller_id=taller_actual_id()
+    ).order_by(Factura.fecha.desc(), Factura.id.desc()).all()
     return jsonify([serializar_factura(factura) for factura in facturas])
 
 
@@ -132,11 +143,17 @@ def listar_facturas():
 def listar_mis_facturas():
     if get_jwt().get('rol') != 'cliente':
         return jsonify({'error': 'Esta vista es solo para clientes.'}), 403
-    usuario = Usuario.query.get(int(get_jwt_identity()))
-    cliente = Cliente.query.filter_by(email=usuario.username).first() if usuario else None
+    usuario = usuario_actual()
+    cliente = Cliente.query.filter_by(
+        email=usuario.username, taller_id=usuario.taller_id
+    ).first() if usuario else None
     if not cliente:
         return jsonify([])
-    facturas = Factura.query.join(Moto).filter(Moto.cliente_id == cliente.id).order_by(Factura.fecha.desc(), Factura.id.desc()).all()
+    facturas = Factura.query.filter_by(
+        taller_id=usuario.taller_id
+    ).join(Moto).filter(Moto.cliente_id == cliente.id).order_by(
+        Factura.fecha.desc(), Factura.id.desc()
+    ).all()
     return jsonify([serializar_factura(factura, incluir_cliente=False) for factura in facturas])
 
 
@@ -148,7 +165,11 @@ def crear_factura():
     datos, error = validar_datos(request.get_json(silent=True))
     if error:
         return jsonify({'error': error}), 400
-    factura = Factura(numero='PENDIENTE', **datos)
+    factura = Factura(
+        numero='PENDIENTE',
+        taller_id=taller_actual_id(),
+        **datos
+    )
     db.session.add(factura)
     db.session.flush()
     factura.numero = f'FAC-{factura.id:06d}'
@@ -164,7 +185,9 @@ def actualizar_factura(factura_id):
     datos, error = validar_datos(request.get_json(silent=True))
     if error:
         return jsonify({'error': error}), 400
-    factura = Factura.query.get_or_404(factura_id)
+    factura = Factura.query.filter_by(
+        id=factura_id, taller_id=taller_actual_id()
+    ).first_or_404()
     for campo, valor in datos.items():
         setattr(factura, campo, valor)
     db.session.commit()
@@ -176,7 +199,9 @@ def actualizar_factura(factura_id):
 def eliminar_factura(factura_id):
     if not es_mecanico():
         return jsonify({'error': 'Solo mecánicos pueden eliminar facturas.'}), 403
-    factura = Factura.query.get_or_404(factura_id)
+    factura = Factura.query.filter_by(
+        id=factura_id, taller_id=taller_actual_id()
+    ).first_or_404()
     db.session.delete(factura)
     db.session.commit()
     return jsonify({'mensaje': 'Factura eliminada.'})
@@ -185,7 +210,9 @@ def eliminar_factura(factura_id):
 @facturas_bp.route('/facturas/<int:factura_id>/pdf', methods=['GET'])
 @jwt_required()
 def descargar_factura_pdf(factura_id):
-    factura = Factura.query.get_or_404(factura_id)
+    factura = Factura.query.filter_by(
+        id=factura_id, taller_id=taller_actual_id()
+    ).first_or_404()
     if not factura_permitida(factura):
         return jsonify({'error': 'No tienes permiso para descargar esta factura.'}), 403
     return send_file(generar_pdf_factura(factura), mimetype='application/pdf', as_attachment=True,

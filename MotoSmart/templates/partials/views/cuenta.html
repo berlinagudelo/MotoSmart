@@ -7,6 +7,7 @@
       </div>
     </div>
     <section class="panel recent account-settings">
+      <p class="account-workshop">Taller actual: <strong id="cuenta-taller">Cargando...</strong></p>
       <form id="cuenta-form" class="form-grid"><label class="full">Correo electrónico<input
             id="cuenta-email" name="email" type="email" maxlength="50"
             required></label><label>Contraseña nueva <small>Opcional</small><input name="password"
@@ -14,6 +15,16 @@
           contraseña<input name="password_confirm" type="password"
             placeholder="Repite la contraseña"></label>
         <div class="actions full"><button class="btn primary">Guardar cambios</button></div>
+      </form>
+      <form id="cambiar-taller-form" class="form-grid customer-only hidden">
+        <label class="full">Cambiar de taller
+          <select name="taller_id" id="cambiar-taller-select" required>
+            <option value="">Cargando talleres...</option>
+          </select>
+        </label>
+        <p class="account-transfer-note full">Para proteger tus datos, confirmaremos el cambio por correo. Se trasladarán tus motos y sus tres diagnósticos más recientes; las citas, órdenes y facturas anteriores seguirán en el taller de origen.</p>
+        <div class="actions full"><button class="btn primary">Solicitar cambio de taller</button></div>
+        <p class="form-status full" id="cambiar-taller-status" role="status"></p>
       </form>
     </section>
   </section>

@@ -79,14 +79,19 @@ function setFormPending(form, pending, message = 'Guardando...') {
   const submit = form.querySelector('button.primary:not([type="button"])');
   if (!submit) return;
   if (pending) {
-    submit.dataset.label = submit.textContent;
+    if (!submit.dataset.originalContent) {
+      submit.dataset.originalContent = submit.innerHTML;
+    }
     submit.textContent = message;
     submit.disabled = true;
     submit.classList.add('is-pending');
     form.classList.add('is-pending');
     return;
   }
-  submit.textContent = submit.dataset.label || submit.textContent;
+  if (submit.dataset.originalContent) {
+    submit.innerHTML = submit.dataset.originalContent;
+    delete submit.dataset.originalContent;
+  }
   submit.disabled = false;
   submit.classList.remove('is-pending');
   form.classList.remove('is-pending');
@@ -427,6 +432,25 @@ async function loadCuenta() {
   try {
     const cuenta = await api('/mi-cuenta');
     $('#cuenta-email').value = cuenta.email || state.username;
+    $('#cuenta-taller').textContent = cuenta.taller_nombre || 'Taller no disponible';
+    if (isCustomer()) {
+      const response = await fetch('/talleres');
+      const talleres = await response.json();
+      if (!response.ok) throw new Error(talleres.error || 'No fue posible cargar los talleres.');
+      const select = $('#cambiar-taller-select');
+      select.replaceChildren(new Option('Selecciona otro taller', ''));
+      talleres
+        .filter(taller => String(taller.id) !== String(cuenta.taller_id))
+        .forEach(taller => select.add(new Option(
+          `${taller.nombre} · ${taller.ciudad}`, taller.id
+        )));
+      if (select.options.length === 1) {
+        select.replaceChildren(new Option('No hay otros talleres disponibles', ''));
+        select.disabled = true;
+      } else {
+        select.disabled = false;
+      }
+    }
   } catch (error) { toast(error.message); }
 }
 
@@ -506,11 +530,13 @@ async function boot() {
   const payload = decode(state.token);
   state.role = state.role || payload.rol || 'cliente';
   state.isWorkshopOwner = Boolean(payload.es_titular_taller);
-  state.username = state.username || payload.username || 'Usuario';
+  state.username = state.username || payload.nombre || payload.username || 'Usuario';
   localStorage.setItem('motosmart_role', state.role);
   $('#user-name').textContent = state.username;
   $('#initial').textContent = state.username.charAt(0).toUpperCase();
   roleUI();
+  $('#landing-view').classList.add('hidden');
+  $('#workshop-view').classList.add('hidden');
   $('#auth-view').classList.add('hidden');
   $('#app-view').classList.remove('hidden');
   playGarageTransition();
@@ -536,7 +562,7 @@ $('#login-form').addEventListener('submit', async event => {
     state.token = data.token;
     state.role = decode(data.token).rol || 'cliente';
     state.isWorkshopOwner = Boolean(decode(data.token).es_titular_taller);
-    state.username = form.get('email').split('@')[0];
+    state.username = decode(data.token).nombre || form.get('email').split('@')[0];
     localStorage.setItem('motosmart_token', state.token);
     localStorage.setItem('motosmart_role', state.role);
     localStorage.setItem('motosmart_username', state.username);
@@ -554,7 +580,8 @@ $('#register-form').addEventListener('submit', async event => {
       body: JSON.stringify({
         username: form.get('email'),
         password: form.get('password'),
-        nombre: form.get('name')
+        nombre: form.get('name'),
+        taller_id: form.get('taller_id')
       })
     });
     toast(data.mensaje || 'Cuenta creada. Ya puedes iniciar sesión.', 'success');
@@ -763,12 +790,37 @@ $('#cuenta-form').addEventListener('submit', async event => {
   }
   setFormPending(form, true, 'Guardando cambios...');
   try {
-    await api('/mi-cuenta', { method: 'PUT', body: JSON.stringify({ password }) });
+    const response = await api('/mi-cuenta', { method: 'PUT', body: JSON.stringify({ password }) });
     form.elements.password.value = '';
     form.elements.password_confirm.value = '';
     toast(response.mensaje || 'Cuenta actualizada.', 'success');
   } catch (error) { toast(error.message); }
   finally { setFormPending(form, false); }
+});
+
+$('#cambiar-taller-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  const form = event.currentTarget;
+  if (!form.elements.taller_id.value) {
+    toast('Selecciona el nuevo taller.');
+    return;
+  }
+  const status = $('#cambiar-taller-status');
+  status.textContent = '';
+  setFormPending(form, true, 'Enviando solicitud...');
+  try {
+    const response = await api('/mi-cuenta/cambiar-taller', {
+      method: 'POST',
+      body: JSON.stringify({ taller_id: form.elements.taller_id.value })
+    });
+    status.textContent = response.mensaje;
+    form.reset();
+  } catch (error) {
+    status.textContent = error.message;
+    toast(error.message);
+  } finally {
+    setFormPending(form, false);
+  }
 });
 
 function renderOrdenRepuesto() {
@@ -822,14 +874,18 @@ $('#ordenes-body').addEventListener('change', async event => {
 
 $('#mecanico-form').addEventListener('submit', async event => {
   event.preventDefault();
-  setFormPending(event.currentTarget, true, 'Agregando mecánico...');
+  const form = event.currentTarget;
+  setFormPending(form, true, 'Agregando mecánico...');
   try {
-    const response = await api('/mecanicos', { method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(event.currentTarget))) });
-    event.currentTarget.reset();
+    const response = await api('/mecanicos', {
+      method: 'POST',
+      body: JSON.stringify(Object.fromEntries(new FormData(form)))
+    });
+    form.reset();
     toast(response.mensaje || 'Mecánico agregado.', 'success');
-    loadMecanicos();
+    await loadMecanicos();
   } catch (error) { toast(error.message); }
-  finally { setFormPending(event.currentTarget, false); }
+  finally { setFormPending(form, false); }
 });
 
 $('#mecanicos-body').addEventListener('click', async event => {

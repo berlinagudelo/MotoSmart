@@ -1,9 +1,9 @@
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
+from flask_jwt_extended import get_jwt, jwt_required
 
 from db import db
 from modelo.inventario import ItemInventario
-from modelo.usuario import Usuario
+from services.tenencia import es_titular, taller_actual_id, usuario_actual
 
 
 inventario_bp = Blueprint('inventario', __name__)
@@ -48,12 +48,7 @@ def puede_gestionar():
 
 def puede_administrar_inventario():
     """Solo el titular del taller puede cambiar existencias."""
-    if get_jwt().get('rol') == 'admin':
-        return True
-    if get_jwt().get('rol') != 'mecanico':
-        return False
-    usuario = Usuario.query.get(get_jwt_identity())
-    return bool(usuario and not usuario.creado_por_id)
+    return es_titular(usuario_actual())
 
 
 @inventario_bp.route('/inventario', methods=['GET'])
@@ -61,7 +56,10 @@ def puede_administrar_inventario():
 def listar_inventario():
     if not puede_gestionar():
         return jsonify({'error': 'No tienes permisos para consultar el inventario'}), 403
-    return jsonify([serializar_item(item) for item in ItemInventario.query.order_by(ItemInventario.nombre.asc()).all()])
+    items = ItemInventario.query.filter_by(
+        taller_id=taller_actual_id()
+    ).order_by(ItemInventario.nombre.asc()).all()
+    return jsonify([serializar_item(item) for item in items])
 
 
 @inventario_bp.route('/inventario', methods=['POST'])
@@ -72,7 +70,7 @@ def crear_item():
     datos, error = validar_datos(request.get_json(silent=True))
     if error:
         return jsonify({'error': error}), 400
-    item = ItemInventario(**datos)
+    item = ItemInventario(**datos, taller_id=taller_actual_id())
     db.session.add(item)
     db.session.commit()
     return jsonify({'mensaje': 'Ítem agregado al inventario.', 'item': serializar_item(item)}), 201
@@ -86,7 +84,9 @@ def actualizar_item(item_id):
     datos, error = validar_datos(request.get_json(silent=True))
     if error:
         return jsonify({'error': error}), 400
-    item = ItemInventario.query.get_or_404(item_id)
+    item = ItemInventario.query.filter_by(
+        id=item_id, taller_id=taller_actual_id()
+    ).first_or_404()
     for campo, valor in datos.items():
         setattr(item, campo, valor)
     db.session.commit()
@@ -98,7 +98,9 @@ def actualizar_item(item_id):
 def eliminar_item(item_id):
     if not puede_administrar_inventario():
         return jsonify({'error': 'Solo el titular del taller puede eliminar artículos del inventario.'}), 403
-    item = ItemInventario.query.get_or_404(item_id)
+    item = ItemInventario.query.filter_by(
+        id=item_id, taller_id=taller_actual_id()
+    ).first_or_404()
     db.session.delete(item)
     db.session.commit()
     return jsonify({'mensaje': 'Ítem eliminado del inventario.'})

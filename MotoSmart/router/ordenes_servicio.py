@@ -9,6 +9,7 @@ from modelo.factura import Factura
 from modelo.moto import Moto
 from modelo.orden_servicio import OrdenRepuesto, OrdenServicio
 from services.notificaciones import enviar_actualizacion_orden
+from services.tenencia import taller_actual_id
 
 
 ordenes_bp = Blueprint('ordenes', __name__)
@@ -52,7 +53,9 @@ def validar_repuestos(datos):
 def listar_ordenes():
     if not es_personal():
         return jsonify({'error': 'Solo el personal del taller puede ver las órdenes.'}), 403
-    ordenes = OrdenServicio.query.order_by(OrdenServicio.creada_en.desc()).all()
+    ordenes = OrdenServicio.query.filter_by(
+        taller_id=taller_actual_id()
+    ).order_by(OrdenServicio.creada_en.desc()).all()
     return jsonify([serializar(orden) for orden in ordenes])
 
 
@@ -69,21 +72,32 @@ def crear_orden():
     descripcion = str(data.get('descripcion', '')).strip()
     if not descripcion or len(descripcion) > 800:
         return jsonify({'error': 'Describe el servicio en máximo 800 caracteres.'}), 400
-    moto = Moto.query.get(moto_id)
+    taller_id = taller_actual_id()
+    moto = Moto.query.filter_by(
+        id=moto_id, taller_id=taller_id, transferida=False
+    ).first()
     if not moto:
         return jsonify({'error': 'La moto seleccionada no existe.'}), 404
     repuestos, error = validar_repuestos(data.get('repuestos', []))
     if error:
         return jsonify({'error': error}), 400
 
-    items = ItemInventario.query.filter(ItemInventario.id.in_(repuestos.keys())).with_for_update().all() if repuestos else []
+    items = ItemInventario.query.filter(
+        ItemInventario.id.in_(repuestos.keys()),
+        ItemInventario.taller_id == taller_id,
+    ).with_for_update().all() if repuestos else []
     if len(items) != len(repuestos):
         return jsonify({'error': 'Uno de los repuestos seleccionados ya no existe.'}), 400
     for item in items:
         if item.cantidad < repuestos[item.id]:
             return jsonify({'error': f'Stock insuficiente para {item.nombre}. Disponible: {item.cantidad} {item.unidad}.'}), 400
 
-    orden = OrdenServicio(numero='PENDIENTE', moto_id=moto.id, descripcion=descripcion)
+    orden = OrdenServicio(
+        numero='PENDIENTE',
+        moto_id=moto.id,
+        taller_id=taller_id,
+        descripcion=descripcion,
+    )
     db.session.add(orden)
     db.session.flush()
     orden.numero = f'OS-{orden.id:06d}'
@@ -103,7 +117,9 @@ def actualizar_estado(orden_id):
     estado = str((request.get_json(silent=True) or {}).get('estado', '')).strip().lower()
     if estado not in ESTADOS:
         return jsonify({'error': 'Selecciona un estado válido.'}), 400
-    orden = OrdenServicio.query.get_or_404(orden_id)
+    orden = OrdenServicio.query.filter_by(
+        id=orden_id, taller_id=taller_actual_id()
+    ).first_or_404()
     orden.estado = estado
     db.session.commit()
     notificacion_enviada = enviar_actualizacion_orden(orden)
@@ -119,8 +135,10 @@ def actualizar_estado(orden_id):
 def panel_taller():
     if not es_personal():
         return jsonify({'error': 'Solo el personal del taller puede ver el panel.'}), 403
-    ordenes = OrdenServicio.query.all()
+    taller_id = taller_actual_id()
+    ordenes = OrdenServicio.query.filter_by(taller_id=taller_id).all()
     consulta_stock_bajo = ItemInventario.query.filter(
+        ItemInventario.taller_id == taller_id,
         ItemInventario.cantidad <= ItemInventario.stock_minimo
     )
     stock_bajo = consulta_stock_bajo.count()
@@ -128,7 +146,11 @@ def panel_taller():
         ItemInventario.cantidad.asc(), ItemInventario.nombre.asc()
     ).limit(5).all()
     desde = date.today() - timedelta(days=30)
-    ventas_mes = sum(float(factura.total) for factura in Factura.query.filter(Factura.fecha >= desde, Factura.estado == 'pagada').all())
+    ventas_mes = sum(float(factura.total) for factura in Factura.query.filter(
+        Factura.taller_id == taller_id,
+        Factura.fecha >= desde,
+        Factura.estado == 'pagada',
+    ).all())
     return jsonify({
         'ordenes_activas': sum(orden.estado not in ('lista', 'entregada') for orden in ordenes),
         'ordenes_terminadas': sum(orden.estado == 'entregada' for orden in ordenes),
@@ -141,5 +163,6 @@ def panel_taller():
             for item in items_bajo
         ],
         'ordenes_recientes': [serializar(orden) for orden in
-                              OrdenServicio.query.order_by(OrdenServicio.actualizada_en.desc()).limit(5).all()]
+                              OrdenServicio.query.filter_by(taller_id=taller_id)
+                              .order_by(OrdenServicio.actualizada_en.desc()).limit(5).all()]
     })

@@ -1,18 +1,17 @@
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
+from flask_jwt_extended import jwt_required
 
 from db import db
 from modelo.usuario import Usuario
+from services.tenencia import es_titular, usuario_actual
 
 mecanicos_bp = Blueprint('mecanicos', __name__)
 
 
 def taller_actual():
     """El personal no puede crear ni borrar los accesos de otros mecánicos."""
-    if get_jwt().get('rol') != 'mecanico':
-        return None
-    usuario = Usuario.query.get(get_jwt_identity())
-    if not usuario or usuario.creado_por_id:
+    usuario = usuario_actual()
+    if not es_titular(usuario):
         return None
     return usuario
 
@@ -27,7 +26,11 @@ def listar_mecanicos():
     titular = taller_actual()
     if not titular:
         return jsonify({'error': 'Solo el titular del taller puede administrar mecánicos.'}), 403
-    mecanicos = Usuario.query.filter_by(rol='mecanico', creado_por_id=titular.id).order_by(Usuario.username.asc()).all()
+    mecanicos = Usuario.query.filter_by(
+        rol='mecanico',
+        creado_por_id=titular.id,
+        taller_id=titular.taller_id,
+    ).order_by(Usuario.username.asc()).all()
     return jsonify([serializar(mecanico) for mecanico in mecanicos])
 
 
@@ -46,7 +49,13 @@ def crear_mecanico():
         return jsonify({'error': 'La contraseña debe tener al menos 6 caracteres.'}), 400
     if Usuario.query.filter_by(username=email).first():
         return jsonify({'error': 'Ya existe una cuenta con ese correo.'}), 400
-    mecanico = Usuario(username=email, rol='mecanico', creado_por_id=titular.id)
+    mecanico = Usuario(
+        username=email,
+        rol='mecanico',
+        nombre=email.split('@')[0],
+        taller_id=titular.taller_id,
+        creado_por_id=titular.id,
+    )
     mecanico.set_password(password)
     db.session.add(mecanico)
     db.session.commit()
@@ -59,7 +68,12 @@ def eliminar_mecanico(mecanico_id):
     titular = taller_actual()
     if not titular:
         return jsonify({'error': 'Solo el titular del taller puede administrar mecánicos.'}), 403
-    mecanico = Usuario.query.filter_by(id=mecanico_id, rol='mecanico', creado_por_id=titular.id).first_or_404()
+    mecanico = Usuario.query.filter_by(
+        id=mecanico_id,
+        rol='mecanico',
+        creado_por_id=titular.id,
+        taller_id=titular.taller_id,
+    ).first_or_404()
     db.session.delete(mecanico)
     db.session.commit()
     return jsonify({'mensaje': 'Acceso del mecánico eliminado.'})

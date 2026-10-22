@@ -6,6 +6,7 @@ from flask_jwt_extended import jwt_required, get_jwt
 from db import db
 from modelo.diagnostico import Diagnostico
 from modelo.moto import Moto
+from services.tenencia import taller_actual_id
 
 
 revision_mecanica_bp = Blueprint('revision_mecanica', __name__)
@@ -19,7 +20,10 @@ def crear_revision_mecanica():
         return jsonify({'error': 'Solo mecanicos pueden registrar revisiones'}), 403
 
     data = request.get_json() or {}
-    moto = Moto.query.get(data.get('moto_id'))
+    taller_id = taller_actual_id()
+    moto = Moto.query.filter_by(
+        id=data.get('moto_id'), taller_id=taller_id, transferida=False
+    ).first()
     if not moto:
         return jsonify({'error': 'La moto seleccionada no existe'}), 404
     if moto.tipo_tecnologia != 'no_electronica':
@@ -40,6 +44,7 @@ def crear_revision_mecanica():
     ]
     revision = Diagnostico(
         moto_id=moto.id,
+        taller_id=taller_id,
         codigo_error='REVISION MECANICA',
         descripcion=diagnostico_final,
         detalle_codigos=json.dumps(detalles),

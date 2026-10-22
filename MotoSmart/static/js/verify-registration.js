@@ -3,10 +3,13 @@ const status = document.querySelector('#verification-status');
 const hash = window.location.hash.slice(1);
 const isEmailChange = hash.startsWith('email=');
 const isClaim = hash.startsWith('claim=');
+const isTransfer = hash.startsWith('transfer=');
 const token = isEmailChange
   ? hash.slice('email='.length)
   : isClaim
     ? hash.slice('claim='.length)
+    : isTransfer
+      ? hash.slice('transfer='.length)
     : hash;
 window.history.replaceState(null, '', window.location.pathname);
 
@@ -24,6 +27,14 @@ if (isClaim) {
   form.querySelectorAll('label').forEach(label => { label.hidden = true; });
   form.querySelectorAll('input').forEach(input => { input.disabled = true; });
   form.querySelector('button').textContent = 'Verificar correo y conectar datos';
+}
+
+if (isTransfer) {
+  document.querySelector('.form-heading h1').textContent = 'Confirma tu cambio de taller';
+  document.querySelector('.form-heading p').textContent = 'Tus motos y sus tres diagnósticos más recientes pasarán al nuevo taller.';
+  form.querySelectorAll('label').forEach(label => { label.hidden = true; });
+  form.querySelectorAll('input').forEach(input => { input.disabled = true; });
+  form.querySelector('button').textContent = 'Confirmar cambio de taller';
 }
 
 if (!token) {

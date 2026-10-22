@@ -6,7 +6,7 @@ import warnings
 import click
 from flask import render_template
 from flask_jwt_extended import JWTManager
-from sqlalchemy import inspect, text
+from sqlalchemy import inspect
 
 from db import db, app
 from router.auth import auth_bp
@@ -19,7 +19,6 @@ from router.inventario import inventario_bp
 from router.facturas import facturas_bp
 from router.mecanicos import mecanicos_bp
 from router.ordenes_servicio import ordenes_bp
-from modelo.usuario import Usuario
 
 jwt_secret = os.environ.get('MOTOSMART_JWT_SECRET_KEY', '')
 if not jwt_secret:
@@ -45,29 +44,6 @@ def home():
     return render_template('index.html')
 
 
-@app.cli.command('crear-titular-taller')
-@click.option('--email', prompt='Correo del titular')
-@click.password_option(prompt='Contraseña', confirmation_prompt=True)
-def crear_titular_taller(email, password):
-    """Crea el titular inicial del taller desde la consola local."""
-    db.create_all()
-    email = email.strip().lower()
-    if not email or '@' not in email or len(email) > 50:
-        raise click.ClickException('Ingresa un correo electrónico válido.')
-    if Usuario.query.filter_by(rol='mecanico', creado_por_id=None).first():
-        raise click.ClickException('Ya existe un titular del taller.')
-    if Usuario.query.filter_by(username=email).first():
-        raise click.ClickException('Ya existe una cuenta con ese correo.')
-    if len(password) < 6:
-        raise click.ClickException('La contraseña debe tener al menos 6 caracteres.')
-
-    titular = Usuario(username=email, rol='mecanico')
-    titular.set_password(password)
-    db.session.add(titular)
-    db.session.commit()
-    click.echo('Titular del taller creado.')
-
-
 app.register_blueprint(citas_bp)
 app.register_blueprint(motos_bp)
 app.register_blueprint(clientes_bp)
@@ -82,16 +58,53 @@ app.register_blueprint(ordenes_bp)
 
 def inicializar_base():
     db.create_all()
-    # db.create_all no agrega columnas a tablas existentes.
-    db.session.execute(text("ALTER TABLE motos ADD COLUMN IF NOT EXISTS tipo_tecnologia VARCHAR(20) NOT NULL DEFAULT 'electronica'"))
-    db.session.execute(text("ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS creado_por_id INTEGER REFERENCES usuarios(id)"))
-    columnas_registro = {
-        columna['name']
-        for columna in inspect(db.engine).get_columns('registros_pendientes')
+    columnas_requeridas = {
+        'usuarios': {'taller_id', 'nombre'},
+        'clientes': {'taller_id'},
+        'motos': {'taller_id', 'transferida'},
+        'inventario': {'taller_id'},
+        'diagnosticos': {'taller_id'},
+        'citas': {'taller_id'},
+        'facturas': {'taller_id'},
+        'ordenes_servicio': {'taller_id'},
+        'registros_pendientes': {'tipo', 'taller_id', 'taller_origen_id'},
     }
-    if 'password_hash' not in columnas_registro:
-        db.session.execute(text('ALTER TABLE registros_pendientes ADD COLUMN password_hash TEXT'))
-    db.session.commit()
+    inspector = inspect(db.engine)
+    for tabla, requeridas in columnas_requeridas.items():
+        existentes = {columna['name'] for columna in inspector.get_columns(tabla)}
+        faltantes = requeridas - existentes
+        if faltantes:
+            raise RuntimeError(
+                f'La tabla {tabla} tiene un esquema anterior al sistema de talleres. '
+                'Ejecuta el comando de reinicio autorizado: '
+                'flask --app app reiniciar-base-talleres --confirmar'
+            )
+    indices_motos = {
+        indice['name'] for indice in inspector.get_indexes('motos')
+    }
+    if 'uq_motos_taller_placa_activa' not in indices_motos:
+        raise RuntimeError(
+            'La tabla motos necesita el índice multi-taller actualizado. '
+            'Ejecuta el reinicio autorizado: '
+            'flask --app app reiniciar-base-talleres --confirmar'
+        )
+
+
+@app.cli.command('reiniciar-base-talleres')
+@click.option(
+    '--confirmar',
+    is_flag=True,
+    help='Confirma que se eliminarán todas las tablas y todos sus datos.',
+)
+def reiniciar_base_talleres(confirmar):
+    """Elimina todos los datos y crea el esquema vacío multi-taller."""
+    if not confirmar:
+        raise click.ClickException(
+            'Este comando borra todos los datos. Repite con --confirmar solo para el destino correcto.'
+        )
+    db.drop_all()
+    db.create_all()
+    click.echo('Base de datos reiniciada con el esquema multi-taller vacío.')
 
 if __name__ == '__main__':
     with app.app_context():

@@ -5,14 +5,14 @@ import uuid
 
 import easyocr
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
+from flask_jwt_extended import jwt_required, get_jwt
 
 from db import db
 from modelo.clientes import Cliente
 from modelo.diagnostico import Diagnostico
 from modelo.moto import Moto
-from modelo.usuario import Usuario
 from services.priorizacion import evaluar_prioridad
+from services.tenencia import taller_actual_id, usuario_actual
 
 scanner_bp = Blueprint('scanner', __name__)
 reader = easyocr.Reader(['es', 'en'])
@@ -72,7 +72,10 @@ def upload_scanner():
     if 'imagen' not in request.files:
         return jsonify({'error': 'No se encontro el archivo de imagen'}), 400
 
-    moto = Moto.query.get(request.form.get('moto_id'))
+    taller_id = taller_actual_id()
+    moto = Moto.query.filter_by(
+        id=request.form.get('moto_id'), taller_id=taller_id, transferida=False
+    ).first()
     if not moto:
         return jsonify({'error': 'La moto seleccionada no existe'}), 404
     if moto.tipo_tecnologia != 'electronica':
@@ -93,6 +96,7 @@ def upload_scanner():
         analisis = evaluar_prioridad(detalles)
         diagnostico = Diagnostico(
             moto_id=moto.id,
+            taller_id=taller_id,
             codigo_error=codigo,
             descripcion=descripcion,
             detalle_codigos=json.dumps(detalles),
@@ -150,7 +154,8 @@ def serializar_diagnostico(diagnostico):
 def listar_diagnosticos():
     if get_jwt().get('rol') not in ('mecanico', 'admin'):
         return jsonify({'error': 'No tienes permisos para esta accion'}), 403
-    return jsonify([serializar_diagnostico(diag) for diag in Diagnostico.query.all()])
+    diagnosticos = Diagnostico.query.filter_by(taller_id=taller_actual_id()).all()
+    return jsonify([serializar_diagnostico(diag) for diag in diagnosticos])
 
 
 @scanner_bp.route('/prioridades', methods=['GET'])
@@ -160,7 +165,11 @@ def listar_prioridades():
         return jsonify({'error': 'Solo mecanicos pueden ver la cola de prioridades'}), 403
 
     recientes_por_moto = {}
-    for diagnostico in Diagnostico.query.order_by(Diagnostico.fecha.desc()).all():
+    for diagnostico in Diagnostico.query.filter_by(
+        taller_id=taller_actual_id()
+    ).join(Moto).filter(Moto.transferida.is_(False)).order_by(
+        Diagnostico.fecha.desc()
+    ).all():
         recientes_por_moto.setdefault(diagnostico.moto_id, diagnostico)
     resultados = [serializar_diagnostico(item) for item in recientes_por_moto.values()]
     resultados.sort(key=lambda item: item['peso_prioridad'], reverse=True)
@@ -172,7 +181,9 @@ def listar_prioridades():
 def eliminar_diagnostico(id):
     if get_jwt().get('rol') != 'mecanico':
         return jsonify({'error': 'Solo mecanicos pueden eliminar diagnosticos'}), 403
-    diagnostico = Diagnostico.query.get_or_404(id)
+    diagnostico = Diagnostico.query.filter_by(
+        id=id, taller_id=taller_actual_id()
+    ).first_or_404()
     db.session.delete(diagnostico)
     db.session.commit()
     return jsonify({'mensaje': 'Diagnostico eliminado con exito'})
@@ -184,12 +195,19 @@ def mis_diagnosticos():
     if get_jwt().get('rol') != 'cliente':
         return jsonify({'error': 'Esta vista es solo para clientes'}), 403
 
-    usuario = Usuario.query.get(int(get_jwt_identity()))
+    usuario = usuario_actual()
     if not usuario:
         return jsonify({'error': 'Usuario no encontrado'}), 404
-    cliente = Cliente.query.filter_by(email=usuario.username).first()
+    cliente = Cliente.query.filter_by(
+        email=usuario.username, taller_id=usuario.taller_id
+    ).first()
     if not cliente:
         return jsonify([])
 
-    diagnosticos = Diagnostico.query.join(Moto).filter(Moto.cliente_id == cliente.id).all()
+    diagnosticos = Diagnostico.query.filter_by(
+        taller_id=usuario.taller_id
+    ).join(Moto).filter(
+        Moto.cliente_id == cliente.id,
+        Moto.transferida.is_(False),
+    ).all()
     return jsonify([serializar_diagnostico(diag) for diag in diagnosticos])
