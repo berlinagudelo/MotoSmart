@@ -10,6 +10,7 @@ const state = {
   facturas: [],
   ordenes: [],
   mecanicos: [],
+  talleres: null,
   isWorkshopOwner: false
 };
 
@@ -428,29 +429,48 @@ async function loadMecanicos() {
   } catch (error) { toast(error.message); }
 }
 
+async function loadTalleres() {
+  if (state.talleres) return state.talleres;
+  const response = await fetch('/talleres');
+  const talleres = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(talleres.error || 'No fue posible cargar los talleres.');
+  if (!Array.isArray(talleres)) throw new Error('La respuesta de talleres no es válida.');
+  state.talleres = talleres;
+  return state.talleres;
+}
+
 async function loadCuenta() {
+  if (isCustomer()) {
+    const select = $('#cambiar-taller-select');
+    let currentWorkshopId = decode(state.token).taller_id;
+    select.disabled = true;
+    select.replaceChildren(new Option('Cargando talleres...', ''));
+    loadTalleres().then(async talleres => {
+      if (currentWorkshopId == null) {
+        const cuenta = await api('/mi-cuenta');
+        currentWorkshopId = cuenta.taller_id;
+      }
+      const disponibles = talleres.filter(
+        taller => String(taller.id) !== String(currentWorkshopId)
+      );
+      select.replaceChildren(new Option(
+        disponibles.length ? 'Selecciona otro taller' : 'No hay otros talleres disponibles',
+        ''
+      ));
+      disponibles.forEach(taller => select.add(new Option(
+        `${taller.nombre} · ${taller.ciudad}`, taller.id
+      )));
+      select.disabled = disponibles.length === 0;
+    }).catch(error => {
+      select.replaceChildren(new Option('No se pudieron cargar los talleres', ''));
+      select.disabled = true;
+      toast(error.message);
+    });
+  }
   try {
     const cuenta = await api('/mi-cuenta');
     $('#cuenta-email').value = cuenta.email || state.username;
     $('#cuenta-taller').textContent = cuenta.taller_nombre || 'Taller no disponible';
-    if (isCustomer()) {
-      const response = await fetch('/talleres');
-      const talleres = await response.json();
-      if (!response.ok) throw new Error(talleres.error || 'No fue posible cargar los talleres.');
-      const select = $('#cambiar-taller-select');
-      select.replaceChildren(new Option('Selecciona otro taller', ''));
-      talleres
-        .filter(taller => String(taller.id) !== String(cuenta.taller_id))
-        .forEach(taller => select.add(new Option(
-          `${taller.nombre} · ${taller.ciudad}`, taller.id
-        )));
-      if (select.options.length === 1) {
-        select.replaceChildren(new Option('No hay otros talleres disponibles', ''));
-        select.disabled = true;
-      } else {
-        select.disabled = false;
-      }
-    }
   } catch (error) { toast(error.message); }
 }
 

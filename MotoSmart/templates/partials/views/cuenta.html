@@ -8,17 +8,18 @@
     </div>
     <section class="panel recent account-settings">
       <p class="account-workshop">Taller actual: <strong id="cuenta-taller">Cargando...</strong></p>
-      <form id="cuenta-form" class="form-grid"><label class="full">Correo electrónico<input
+      <form id="cuenta-form" class="form-grid"><label class="full"><span>Correo electrónico</span><input
             id="cuenta-email" name="email" type="email" maxlength="50"
-            required></label><label>Contraseña nueva <small>Opcional</small><input name="password"
-            type="password" placeholder="Mínimo 6 caracteres" minlength="6"></label><label>Confirmar
-          contraseña<input name="password_confirm" type="password"
-            placeholder="Repite la contraseña"></label>
+            required></label><label><span>Contraseña nueva <small>Opcional</small></span><input name="password"
+            type="password" placeholder="Mínimo 6 caracteres" minlength="6"
+            autocomplete="new-password"></label><label><span>Confirmar contraseña</span><input
+            name="password_confirm" type="password" placeholder="Repite la contraseña"
+            autocomplete="new-password"></label>
         <div class="actions full"><button class="btn primary">Guardar cambios</button></div>
       </form>
       <form id="cambiar-taller-form" class="form-grid customer-only hidden">
         <label class="full">Cambiar de taller
-          <select name="taller_id" id="cambiar-taller-select" required>
+          <select name="taller_id" id="cambiar-taller-select" required disabled>
             <option value="">Cargando talleres...</option>
           </select>
         </label>

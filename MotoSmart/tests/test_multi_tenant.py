@@ -57,6 +57,8 @@ class MultiTenantTests(unittest.TestCase):
         self.assertIn(b'id="back-to-desktop"', response.data)
         self.assertIn(b'data-app-roles="mecanico titular" data-go="scanner"', response.data)
         self.assertIn(b'id="account-menu-shell" class="account-menu hidden"', response.data)
+        self.assertIn(b'<span>Confirmar contrase\xc3\xb1a</span>', response.data)
+        self.assertIn(b'name="password_confirm"', response.data)
 
     def test_database_reset_command_requires_explicit_confirmation(self):
         self.crear_taller('Taller antes del reinicio', 'reinicio@example.com')

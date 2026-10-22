@@ -85,6 +85,20 @@ body {
   row-gap: 17px;
 }
 
+.account-settings #cuenta-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.account-settings #cuenta-form label:not(.full) {
+  align-content: start;
+}
+
+.account-settings #cuenta-form label:not(.full) > span {
+  display: block;
+  min-height: 18px;
+  line-height: 1.4;
+}
+
 .form-grid label {
   min-width: 0;
 }
@@ -315,6 +329,10 @@ textarea:focus {
   }
 
   .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .account-settings #cuenta-form {
     grid-template-columns: minmax(0, 1fr);
   }
 
