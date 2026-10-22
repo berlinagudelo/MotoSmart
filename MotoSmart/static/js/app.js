@@ -139,11 +139,11 @@ function roleUI() {
   $$('[data-client]').forEach(element => element.classList.toggle('hidden', !isCustomer()));
   $$('[data-admin]').forEach(element => element.classList.toggle('hidden', isCustomer()));
 
-  $('.nav[data-view="motos"]').classList.toggle('hidden', !(isCustomer() || isMechanic()));
-  $('.nav[data-view="inicio"]').classList.toggle('hidden', isMechanic() && !isWorkshopOwner());
-  $('.nav[data-view="diagnosticos"]').classList.toggle('hidden', isCustomer());
-  $('.nav[data-view="inventario"]').classList.toggle('hidden', !(isMechanic() || isAdmin()));
-  $('.nav[data-view="mecanicos"]').classList.toggle('hidden', !isWorkshopOwner());
+  const appRole = isWorkshopOwner() ? 'titular' : state.role;
+  $$('[data-app-roles]').forEach(element => {
+    const allowedRoles = element.dataset.appRoles.split(/\s+/);
+    element.classList.toggle('hidden', !allowedRoles.includes(appRole));
+  });
   $('#add-item').classList.toggle('hidden', !canManageInventory());
   $('#add-moto').classList.toggle('hidden', !(isCustomer() || isMechanic()));
   $$('.mechanic-field').forEach(element => {
@@ -504,15 +504,18 @@ function renderWorkshopDashboard(panel) {
 
 function show(view) {
   if (isMechanic() && !isWorkshopOwner() && view === 'inicio') view = 'ordenes';
-  if (isCustomer() && !['inicio', 'resultados', 'citas', 'motos', 'facturas', 'cuenta'].includes(view)) view = 'resultados';
+  if (isCustomer() && !['escritorio', 'inicio', 'resultados', 'citas', 'motos', 'facturas', 'cuenta'].includes(view)) view = 'resultados';
   if (!isMechanic() && view === 'scanner') view = 'inicio';
   if (view === 'mecanicos' && !isWorkshopOwner()) view = 'inicio';
   $$('.view').forEach(element => element.classList.toggle('active', element.id === `view-${view}`));
   $$('.nav').forEach(element => element.classList.toggle('active', element.dataset.view === view));
-  const titles = { inicio: 'Resumen', resultados: 'Resultados del servicio', motos: 'Motos', citas: 'Citas', scanner: 'Escaner OCR', 'revision-mecanica': 'Revisión mecánica', prioridades: 'Prioridades', diagnosticos: 'Diagnosticos', inventario: 'Inventario', facturas: 'Mis facturas', facturacion: 'Facturación' };
+  const titles = { escritorio: 'Escritorio', inicio: 'Resumen', resultados: 'Resultados del servicio', motos: 'Motos', citas: 'Citas', scanner: 'Escaner OCR', 'revision-mecanica': 'Revisión mecánica', prioridades: 'Prioridades', diagnosticos: 'Diagnosticos', inventario: 'Inventario', facturas: 'Mis facturas', facturacion: 'Facturación' };
   $('#title').textContent = view === 'mecanicos' ? 'Mi equipo' : view === 'cuenta' ? 'Ajustes de cuenta' : view === 'ordenes' ? 'Órdenes de servicio' : titles[view];
   $('#overline').textContent = isMechanic() ? 'Panel de mecanico' : isAdmin() ? 'Administracion' : 'Panel de cliente';
-  $('#app-view').classList.remove('menu-open');
+  $('#back-to-desktop').classList.toggle('hidden', view === 'escritorio');
+  $('#account-menu-shell').classList.toggle('hidden', view !== 'escritorio');
+  closeAccountMenu();
+  if (view === 'escritorio') $('#desktop-greeting').textContent = state.username.split(' ')[0];
   if (view === 'motos') loadMotos();
   if (view === 'citas') { loadMotos().then(() => fillCitaSelect()); loadCitas(); }
   if (view === 'prioridades') loadPrioridades();
@@ -543,8 +546,7 @@ async function boot() {
   if (isCustomer()) window.setTimeout(playClientWelcome, 2350);
   await Promise.all([loadMotos(), loadDiagnostics()]);
   if (isWorkshopOwner()) await loadPanelTaller();
-  if (isMechanic() && !isWorkshopOwner()) show('ordenes');
-  else if (isCustomer()) show('resultados');
+  show('escritorio');
 }
 
 $$('[data-tab]').forEach(button => button.addEventListener('click', () => {
@@ -603,12 +605,14 @@ $('#register-form').addEventListener('submit', async event => {
 });
 
 $$('.nav').forEach(button => button.addEventListener('click', () => show(button.dataset.view)));
-$$('[data-go]').forEach(button => button.addEventListener('click', () => show(button.dataset.go)));
+$$('[data-go]').forEach(button => button.addEventListener('click', event => {
+  event.preventDefault();
+  show(button.dataset.go);
+}));
 $('#moto-health').addEventListener('click', event => {
   const action = event.target.closest('[data-moto-action]');
   if (action) show(action.dataset.motoAction);
 });
-$('#menu').addEventListener('click', () => $('#app-view').classList.toggle('menu-open'));
 function logout() {
   ['motosmart_token', 'motosmart_role', 'motosmart_username'].forEach(key => localStorage.removeItem(key));
   location.reload();

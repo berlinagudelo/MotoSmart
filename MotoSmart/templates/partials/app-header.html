@@ -1,10 +1,17 @@
  <section class="workspace">
-   <header><button id="menu" class="menu" aria-label="Menú">☰</button>
-     <div>
+   <header>
+     <div class="workspace-heading">
+       <a class="brand app-brand" href="#" data-go="escritorio" aria-label="MotoSmart, volver al escritorio">
+         <b>M</b> Moto<span>Smart</span>
+       </a>
        <p class="eyebrow" id="overline">Panel</p>
        <h1 id="title">Resumen</h1>
      </div>
-     <div class="account-menu"><button id="account-menu-button" class="user" type="button"
+     <button id="back-to-desktop" class="back-to-desktop hidden" type="button" data-go="escritorio">
+       <svg class="back-to-desktop-icon" aria-hidden="true"><use href="#icon-home"></use></svg>
+       <span>Escritorio</span>
+     </button>
+     <div id="account-menu-shell" class="account-menu hidden"><button id="account-menu-button" class="user" type="button"
          aria-expanded="false" aria-controls="account-menu"><b id="initial">U</b>
          <div><strong id="user-name">Usuario</strong><small id="user-role">Cliente</small></div>
          <span aria-hidden="true">⌄</span>

@@ -45,6 +45,18 @@ class MultiTenantTests(unittest.TestCase):
         self.assertIn('Quiénes somos'.encode(), response.data)
         self.assertIn('register-workshop'.encode(), response.data)
         self.assertIn('Registrar mi taller'.encode(), response.data)
+        self.assertNotIn(b'aria-label="Navegaci\xc3\xb3n principal"', response.data)
+        self.assertIn(b'<symbol id="icon-home"', response.data)
+        self.assertIn(b'<use href="#icon-home">', response.data)
+        self.assertEqual(response.data.count(b'class="desktop-app"'), 15)
+        self.assertIn(b'data-app-roles="mecanico admin titular"', response.data)
+        self.assertIn(b'data-app-roles="titular"', response.data)
+        self.assertIn(b'id="view-escritorio"', response.data)
+        self.assertIn(b'class="desktop-apps"', response.data)
+        self.assertIn(b'data-go="inventario"', response.data)
+        self.assertIn(b'id="back-to-desktop"', response.data)
+        self.assertIn(b'data-app-roles="mecanico titular" data-go="scanner"', response.data)
+        self.assertIn(b'id="account-menu-shell" class="account-menu hidden"', response.data)
 
     def test_database_reset_command_requires_explicit_confirmation(self):
         self.crear_taller('Taller antes del reinicio', 'reinicio@example.com')
