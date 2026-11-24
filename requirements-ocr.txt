@@ -1,0 +1,2 @@
+# OCR pesado: instalar solo en el worker/servidor que procesa imágenes.
+easyocr>=1.7,<2.0

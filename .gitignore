@@ -1,0 +1,33 @@
+# Credenciales y configuración local
+.env
+.env.*
+correo.configuracion.ps1
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Artefactos de compilación y ejecución
+build/
+dist/
+*.spec.bak
+temp_uploads/
+*.log
+*.tmp
+instance/
+backups/
+*.dump
+*.sha256
+_alembic_*.db
+ci_sqlite.db
+
+# Artefactos de sistema
+Thumbs.db
+desktop.ini
+.DS_Store
