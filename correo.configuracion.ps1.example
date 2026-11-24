@@ -1,0 +1,60 @@
+# Copia este archivo como correo.configuracion.ps1, completa los valores en tu
+# equipo y ejecútalo en la misma ventana de PowerShell antes de iniciar MotoSmart.
+# No compartas ni subas el archivo final al repositorio.
+
+# Opcional para desarrollo. Si no se configura, MotoSmart genera una clave
+# temporal y las sesiones actuales vencen al reiniciar la aplicación.
+# En producción, genera una clave aleatoria una sola vez y guárdala aquí.
+# $env:MOTOSMART_JWT_SECRET_KEY = 'PEGA_AQUI_TU_CLAVE_ALEATORIA'
+$env:MOTOSMART_DATABASE_URL = ''
+$env:MOTOSMART_PUBLIC_URL = 'http://127.0.0.1:5000'
+
+# Entorno: development (por defecto) o production. En producción se exige una
+# clave JWT persistente, HTTPS y verificación de correo para cuentas nuevas.
+# $env:MOTOSMART_ENV = 'production'
+# $env:MOTOSMART_REQUIRE_EMAIL_VERIFICATION = 'true'
+# $env:MOTOSMART_RATELIMIT = 'true'
+# $env:MOTOSMART_MAX_UPLOAD_MB = '10'
+# $env:MOTOSMART_NOTIFICACIONES_ASYNC = 'true'
+# $env:MOTOSMART_TRUST_PROXY = 'false'
+
+# Sesión en cookie HttpOnly + CSRF (recomendado en producción).
+# $env:MOTOSMART_COOKIE_DOMAIN = 'motorsmart.example.com'
+# El token solo se devuelve en el cuerpo para integraciones locales.
+# $env:MOTOSMART_RETURN_TOKEN_IN_BODY = 'false'
+
+# Rate limiting compartido entre workers/instancias (Redis).
+# Sin esta variable, cada proceso usa su propio contador en memoria.
+# $env:MOTOSMART_REDIS_URL = 'redis://127.0.0.1:6379/0'
+
+# Cola persistente de OCR.
+# $env:MOTOSMART_OCR_DIR = 'C:\MotoSmart\datos\ocr'
+# $env:MOTOSMART_OCR_INLINE_WORKER = 'false'
+# $env:MOTOSMART_OCR_MAX_INTENTOS = '3'
+# $env:MOTOSMART_OCR_TIMEOUT_SEGUNDOS = '600'
+
+# Retención de datos (días).
+# $env:MOTOSMART_RETENCION_AUDITORIA_DIAS = '730'
+# $env:MOTOSMART_RETENCION_OCR_DIAS = '90'
+# $env:MOTOSMART_RETENCION_CUENTAS_DIAS = '365'
+# $env:MOTOSMART_RETENCION_LOTE = '5000'
+
+# Migraciones: en producción ejecuta `alembic upgrade head` y deja esto en false.
+# $env:MOTOSMART_AUTO_MIGRATE = 'false'
+
+# Servidor WSGI (Waitress en Windows / Gunicorn en Linux).
+# $env:MOTOSMART_HOST = '127.0.0.1'
+# $env:MOTOSMART_PORT = '8000'
+# $env:MOTOSMART_THREADS = '8'
+
+# Pool de conexiones para PostgreSQL (opcional).
+# $env:MOTOSMART_DB_POOL_SIZE = '5'
+# $env:MOTOSMART_DB_MAX_OVERFLOW = '10'
+# $env:MOTOSMART_DB_TIMEOUT_MS = '15000'
+
+$env:SMTP_HOST = 'smtp.gmail.com'
+$env:SMTP_PORT = '587'
+$env:SMTP_TLS = 'true'
+$env:SMTP_USER = 'tu_correo@gmail.com'
+$env:SMTP_PASSWORD = 'PEGA_AQUI_TU_NUEVA_CLAVE_DE_APLICACION'
+$env:SMTP_FROM = 'MotoSmart <tu_correo@gmail.com>'

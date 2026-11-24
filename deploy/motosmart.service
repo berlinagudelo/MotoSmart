@@ -1,0 +1,26 @@
+[Unit]
+Description=MotoSmart web (Gunicorn)
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=notify
+User=motosmart
+Group=motosmart
+WorkingDirectory=/opt/motosmart
+EnvironmentFile=/etc/motosmart/motosmart.env
+ExecStart=/opt/motosmart/.venv/bin/gunicorn -c gunicorn.conf.py wsgi:application
+ExecReload=/bin/kill -s HUP $MAINPID
+KillMode=mixed
+TimeoutStopSec=35
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/motosmart /var/log/motosmart
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
